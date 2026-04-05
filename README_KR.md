@@ -102,6 +102,19 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 - **편집 패널** (우측) — 가중치 슬라이더, 타입 선택기, 삭제/엣지 액션
 - **정보 패널** (좌측) — 설명, 연결 노드 목록, 가중치 바, 클릭 내비게이션
 
+### 핸드 제스처 컨트롤
+
+[MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/vision/gesture_recognizer) 핸드 트래킹을 활용한 웹캠 기반 핸즈프리 인터랙션을 지원합니다. 좌측 하단의 제스처 토글 버튼으로 활성화합니다.
+
+| 제스처 | 동작 |
+|---|---|
+| **손바닥 펴고 드래그** | 손 움직임으로 3D 구 회전 |
+| **주먹 쥐기** | 회전 즉시 정지 |
+| **손 제거** | 관성으로 감속하며 회전 유지 |
+| **손 크기 변화** | 카메라에 가까이 → 줌 인 / 멀리 → 줌 아웃 |
+
+~15fps 추론 + 1-Euro 필터로 부드럽고 떨림 없는 트래킹을 제공합니다. 구 표면 위 링 커서가 실시간 시각 피드백을 제공하며, 오버레이에서 미니 웹캠 프리뷰를 토글할 수 있습니다.
+
 ### 합성 프롬프트 파이프라인
 
 ```
@@ -198,6 +211,11 @@ cp .env.example .env
 | 카메라 홈 | `H` |
 | Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` (Mac: `Cmd+Z` / `Cmd+Shift+Z`) |
 | 도움말 오버레이 | `?` |
+| **핸드 제스처** | |
+| 제스처 컨트롤 토글 | 좌측 하단 토글 버튼 |
+| 구 회전 | 손바닥 펴고 드래그 |
+| 회전 정지 | 주먹 쥐기 |
+| 줌 인 / 아웃 | 손을 카메라에 가까이 / 멀리 |
 
 ---
 
@@ -212,6 +230,7 @@ cp .env.example .env
 | 상태 관리 | Zustand (Map + Array 이중 구조) |
 | 레이아웃 | D3-hierarchy (방사형 링), Fibonacci 격자 (구면) |
 | API | Claude API (Vite 프록시 경유) |
+| 제스처 | MediaPipe Hand + 1-Euro 필터 |
 | 검증 | Zod 스키마 검증 + 재시도 |
 | 스타일 | Lombardi 미학 (DM Sans, IBM Plex Sans) |
 | 빌드 | Vite + TypeScript |
@@ -264,6 +283,8 @@ src/
 │   ├── EdgeRenderer.tsx      통합 Bezier 엣지 렌더러 (useFrame, re-render 0회)
 │   ├── NodeInfoPanel.tsx     좌측 패널: 설명 + 연결 노드
 │   ├── NodeEditPanel.tsx     우측 패널: 가중치 슬라이더 + 타입 + 액션
+│   ├── HandGestureOverlay.tsx 웹캠 제스처 토글 + 상태 표시
+│   ├── HandCursor.tsx        구 표면 위 3D 링 커서
 │   ├── HelpOverlay.tsx       ? 버튼 + 키보드 단축키 레퍼런스
 │   ├── PromptInput.tsx       프롬프트 입력 + N/D 슬라이더
 │   ├── ResponsePanel.tsx     스트리밍 응답 + 개념 하이라이트
@@ -272,6 +293,7 @@ src/
 ├── hooks/
 │   ├── useMorphTransition    GSAP Sphere ↔ Radial 모프
 │   ├── useRadialPhysics      Radial 드래그 스프링 물리
+│   ├── useGestureControl     웹캠 손 → 구 회전/줌
 │   ├── useNodeSpawnAnimation 노드 생성 elastic 스태거
 │   └── useKeyboardShortcuts  글로벌 키보드 핸들러
 ├── services/
@@ -285,6 +307,9 @@ src/
 │   ├── node.ts               NodeData, NodeType, 패싯
 │   ├── edge.ts               EdgeData, RelationType
 │   └── extraction.ts         예산 배분 (Rosch/Miller 제약)
+├── gesture/
+│   ├── gestureEngine.ts      MediaPipe 추론 + 1-Euro 필터링
+│   └── gestureTypes.ts       GestureState 인터페이스
 ├── utils/
 │   ├── radialLayout.ts       용량 제한이 있는 동심원 링 레이아웃
 │   ├── coordinates.ts        구면 ↔ 직교 ↔ 방사형 변환

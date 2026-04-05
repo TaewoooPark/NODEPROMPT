@@ -102,6 +102,19 @@ Each type is distinguished by a unique pattern texture (Lombardi-style: no color
 - **Edit panel** (right side) — weight slider, type selector, delete, edge actions
 - **Info panel** (left side) — description, connected nodes list, weight bar with click-to-navigate
 
+### Hand Gesture Control
+
+NodePrompt supports hands-free interaction via webcam using [MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/vision/gesture_recognizer) hand tracking. Toggle the gesture button (bottom-left) to activate.
+
+| Gesture | Action |
+|---|---|
+| **Open palm + drag** | Rotate the 3D sphere by moving your hand |
+| **Closed fist** | Stop rotation immediately |
+| **Hand removed** | Sphere coasts with momentum decay |
+| **Hand size change** | Zoom in (closer to camera) / zoom out (further away) |
+
+The system runs at ~15 fps inference with 1-Euro filters for smooth, jitter-free tracking. A ring cursor on the sphere surface provides real-time visual feedback. An optional mini webcam preview can be toggled from the overlay.
+
 ### Synthesized Prompt Pipeline
 
 ```
@@ -197,6 +210,11 @@ Browser-entered key takes priority over `.env`. The key persists across resets a
 | Camera home | `H` |
 | Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` (Mac: `Cmd+Z` / `Cmd+Shift+Z`) |
 | Help overlay | `?` |
+| **Hand Gesture** | |
+| Toggle gesture control | Bottom-left toggle button |
+| Rotate sphere | Open palm + drag |
+| Stop rotation | Closed fist |
+| Zoom in / out | Move hand closer / further from camera |
 
 ---
 
@@ -211,6 +229,7 @@ Browser-entered key takes priority over `.env`. The key persists across resets a
 | State | Zustand (Map + Array dual structure) |
 | Layout | D3-hierarchy (radial rings), Fibonacci lattice (sphere) |
 | API | Claude API via Vite proxy |
+| Gesture | MediaPipe Hand + 1-Euro filter |
 | Validation | Zod schema validation with retry |
 | Style | Lombardi aesthetic (DM Sans, IBM Plex Sans) |
 | Build | Vite + TypeScript |
@@ -263,6 +282,8 @@ src/
 │   ├── EdgeRenderer.tsx      Unified Bezier edge renderer (useFrame, 0 re-renders)
 │   ├── NodeInfoPanel.tsx     Left panel: description + connections
 │   ├── NodeEditPanel.tsx     Right panel: weight slider + type + actions
+│   ├── HandGestureOverlay.tsx Toggle + status for webcam gesture control
+│   ├── HandCursor.tsx        3D ring cursor following hand on sphere
 │   ├── HelpOverlay.tsx       ? button + keyboard shortcut reference
 │   ├── PromptInput.tsx       Prompt input with N/D sliders
 │   ├── ResponsePanel.tsx     Streaming response + concept highlight
@@ -271,6 +292,7 @@ src/
 ├── hooks/
 │   ├── useMorphTransition    GSAP Sphere ↔ Radial morph
 │   ├── useRadialPhysics      Spring physics for radial drag
+│   ├── useGestureControl     Webcam hand → sphere rotation/zoom
 │   ├── useNodeSpawnAnimation Elastic stagger on node creation
 │   └── useKeyboardShortcuts  Global keyboard handlers
 ├── services/
@@ -284,6 +306,9 @@ src/
 │   ├── node.ts               NodeData, NodeType, facets
 │   ├── edge.ts               EdgeData, RelationType
 │   └── extraction.ts         Budget allocation (Rosch/Miller constraints)
+├── gesture/
+│   ├── gestureEngine.ts      MediaPipe inference + 1-Euro filtering
+│   └── gestureTypes.ts       GestureState interface
 ├── utils/
 │   ├── radialLayout.ts       Concentric ring layout with capacity limits
 │   ├── coordinates.ts        Spherical ↔ Cartesian ↔ Radial transforms

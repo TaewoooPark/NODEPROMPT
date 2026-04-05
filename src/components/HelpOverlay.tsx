@@ -145,11 +145,18 @@ export function HelpOverlay() {
             <Row label="Redo" shortcut="Ctrl + Shift + Z" />
             <Row label="이 도움말" shortcut="?" />
 
+            <div style={sectionTitle}>Hand Gesture (Sphere)</div>
+            <Row label="제스처 ON/OFF" shortcut="하단 좌측 토글 버튼" />
+            <Row label="구 회전" shortcut="손바닥 펴고 드래그" />
+            <Row label="회전 정지" shortcut="주먹 쥐기" />
+            <Row label="줌 인/아웃" shortcut="손 크기 변화" />
+
             <div style={{ ...sectionTitle, marginTop: 20 }}>Tip</div>
             <div style={{ fontSize: 11, fontWeight: 300, color: '#666', lineHeight: 1.6 }}>
               노드를 클릭하면 연결된 노드만 강조됩니다.
               다시 클릭하면 포커싱이 풀립니다.
               우클릭으로 컨텍스트 메뉴를 열 수 있습니다.
+              하단 좌측 버튼으로 웹캠 제스처 컨트롤을 활성화할 수 있습니다.
             </div>
 
             <button
