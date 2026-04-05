@@ -151,7 +151,7 @@ npm run dev
 ### API 키 설정
 
 **방법 A — 브라우저 (배포 시 권장)**
-1. `http://localhost:5173` 접속
+1. `npm run dev` 실행 후 터미널에 표시되는 로컬 URL 접속
 2. 상단 툴바의 **API** 버튼 클릭
 3. Claude API 키 붙여넣기 (`****`로 마스킹 표시, `localStorage`에만 저장)
 4. 연결 성공 시 표시가 `API`로 변경

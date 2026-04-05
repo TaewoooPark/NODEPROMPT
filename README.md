@@ -151,7 +151,7 @@ npm run dev
 ### API Key Setup
 
 **Option A — Browser (recommended for sharing)**
-1. Open `http://localhost:5173`
+1. Open the local URL shown in your terminal after `npm run dev`
 2. Click the **API** button in the top toolbar
 3. Paste your Claude API key (displayed as `****`, stored in `localStorage` only)
 4. The indicator turns to `API` when connected
