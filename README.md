@@ -142,8 +142,8 @@ Each type is distinguished by a unique pattern texture (Lombardi-style: no color
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/nodeprompt.git
-cd nodeprompt
+git clone https://github.com/TaewoooPark/NODEPROMPT.git
+cd NODEPROMPT
 npm install
 npm run dev
 ```
@@ -158,10 +158,14 @@ npm run dev
 
 **Option B — Environment variable**
 ```bash
-echo "VITE_ANTHROPIC_API_KEY=sk-ant-..." > .env
+cp .env.example .env
+# Edit .env and add your API key:
+# VITE_ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 Browser-entered key takes priority over `.env`. The key persists across resets and page reloads.
+
+> **Note:** API calls are routed through Vite's dev proxy. This setup is intended for local development (`npm run dev`). For production deployment, a separate backend proxy is required.
 
 ### Quick Start
 
@@ -191,7 +195,7 @@ Browser-entered key takes priority over `.env`. The key persists across resets a
 | Delete node (Radial) | `Backspace` |
 | Toggle labels | `L` |
 | Camera home | `H` |
-| Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` |
+| Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` (Mac: `Cmd+Z` / `Cmd+Shift+Z`) |
 | Help overlay | `?` |
 
 ---

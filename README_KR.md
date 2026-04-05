@@ -142,8 +142,8 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 ### 설치
 
 ```bash
-git clone https://github.com/your-username/nodeprompt.git
-cd nodeprompt
+git clone https://github.com/TaewoooPark/NODEPROMPT.git
+cd NODEPROMPT
 npm install
 npm run dev
 ```
@@ -158,10 +158,14 @@ npm run dev
 
 **방법 B — 환경 변수**
 ```bash
-echo "VITE_ANTHROPIC_API_KEY=sk-ant-..." > .env
+cp .env.example .env
+# .env 파일을 열어 API 키를 입력하세요:
+# VITE_ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 브라우저 입력 키가 `.env`보다 우선합니다. 키는 Reset이나 페이지 새로고침 후에도 유지됩니다.
+
+> **참고:** API 호출은 Vite 개발 서버 프록시를 통해 라우팅됩니다. 이 설정은 로컬 개발(`npm run dev`) 전용입니다. 프로덕션 배포 시에는 별도의 백엔드 프록시가 필요합니다.
 
 ### 빠른 시작
 
@@ -192,7 +196,7 @@ echo "VITE_ANTHROPIC_API_KEY=sk-ant-..." > .env
 | 노드 삭제 (Radial) | `Backspace` |
 | 라벨 토글 | `L` |
 | 카메라 홈 | `H` |
-| Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` |
+| Undo / Redo | `Ctrl+Z` / `Ctrl+Shift+Z` (Mac: `Cmd+Z` / `Cmd+Shift+Z`) |
 | 도움말 오버레이 | `?` |
 
 ---
