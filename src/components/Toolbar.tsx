@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, type CSSProperties } from 're
 import { useGraphStore } from '../store/useGraphStore';
 import { checkClaudeConnection, setApiKey, getSavedApiKey } from '../services/claude';
 import { loadDemoData } from '../utils/demoData';
-import { useT } from '../i18n/useLanguage';
+import { useT, useLanguageStore } from '../i18n/useLanguage';
 
 const barStyle: CSSProperties = {
   position: 'fixed',
@@ -65,6 +65,7 @@ export function Toolbar() {
   const [keyDraft, setKeyDraft] = useState('');
   const keyInputRef = useRef<HTMLInputElement>(null);
   const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
 
   // API 키 존재 여부 (마스킹 표시용)
   const hasKey = Boolean(getSavedApiKey());
@@ -80,10 +81,10 @@ export function Toolbar() {
   }, [keyDraft]);
 
   const handleDemo = useCallback(() => {
-    const { nodes, edges } = loadDemoData(sphereRadius);
+    const { nodes, edges } = loadDemoData(sphereRadius, lang);
     replaceGraph(nodes, edges);
     setOriginalPrompt(t('toolbar.demoPrompt'));
-  }, [sphereRadius, replaceGraph, setOriginalPrompt, t]);
+  }, [sphereRadius, replaceGraph, setOriginalPrompt, t, lang]);
 
   const handleReset = useCallback(() => {
     replaceGraph([], []);
