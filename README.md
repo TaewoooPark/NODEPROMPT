@@ -102,9 +102,11 @@ Each type is distinguished by a unique pattern texture (Lombardi-style: no color
 - **Drag** nodes in Radial mode to spatially reorganize
 - **Scroll wheel** on a node to adjust its weight (importance)
 - **Shift+click** two nodes to create an edge between them
-- **Right-click** for context menu (type change, delete, edge creation)
-- **Edit panel** (right side) — weight slider, type selector, delete, edge actions
-- **Info panel** (left side) — description, connected nodes list, weight bar with click-to-navigate
+- **Right-click** empty space to **add a new node** (works in both Sphere and Radial modes)
+- **Right-click** a selected node for context menu (type change, delete, edge creation)
+- **Double-click** a node label (in either panel) to **rename** it inline
+- **Edit panel** (right side) — label editing, description with **Auto** AI-generate button, weight slider, type selector, delete, edge actions
+- **Info panel** (left side) — label editing, description, connected nodes list, weight bar with click-to-navigate
 
 ### Hand Gesture Control
 
@@ -207,6 +209,9 @@ Browser-entered key takes priority over `.env`. The key persists across resets a
 | Drag node (Radial) | Drag |
 | Adjust weight | `]` `+` increase / `[` `-` decrease |
 | Adjust weight (Radial) | Scroll wheel on node |
+| Add node | Right-click empty space (Sphere / Radial) |
+| Rename node | Double-click label in panel |
+| Auto-generate description | Click **Auto** in edit panel |
 | Create edge | `Shift+Click` source, then target |
 | Cancel edge creation | `Esc` |
 | Delete node (Radial) | `Backspace` |
