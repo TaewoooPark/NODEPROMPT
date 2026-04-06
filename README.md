@@ -6,6 +6,10 @@ NodePrompt decomposes natural language prompts into multi-dimensional concept gr
 
 > *"Thinking is non-linear. Language is linear. The sphere bridges that gap."*
 
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
+</p>
+
 [한국어 README](./README_KR.md)
 
 ---

@@ -6,6 +6,10 @@
 
 > *"사고는 비선형이다. 언어는 선형이다. 구의 표면이 그 간극을 메운다."*
 
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
+</p>
+
 [English README](./README.md)
 
 ---
