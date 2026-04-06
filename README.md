@@ -325,6 +325,10 @@ src/
 
 ## Design Principles
 
+<p align="center">
+  <img src="./public/favicon.svg" alt="NodePrompt — Fibonacci sphere logo" width="240">
+</p>
+
 1. **White canvas, black ink** — Lombardi aesthetic. No colors, no shadows, no gradients. Pattern textures distinguish node types.
 2. **Continuity across modes** — Node identity (pattern, size, label) is preserved through all transitions.
 3. **Immediate feedback** — Every interaction produces instant visual response with smooth transitions.
