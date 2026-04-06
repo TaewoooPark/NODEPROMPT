@@ -1,5 +1,6 @@
-import { useMemo, useCallback, type CSSProperties } from 'react';
+import { useMemo, useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useGraphStore } from '../store/useGraphStore';
+import { useHistoryStore } from '../store/useHistoryStore';
 import { PATTERN_CSS, TYPE_LABELS_KO } from '../utils/nodePatterns';
 import type { NodeType } from '../types';
 
@@ -29,11 +30,39 @@ export function NodeInfoPanel() {
   const edges = useGraphStore((s) => s.edges);
   const treeEdges = useGraphStore((s) => s.treeEdges);
   const setSelectedId = useGraphStore((s) => s.setSelectedNodeId);
+  const updateNode = useGraphStore((s) => s.updateNode);
+  const pushAction = useHistoryStore((s) => s.pushAction);
 
   const node = useMemo(
     () => (selectedNodeId ? nodes.get(selectedNodeId) ?? null : null),
     [selectedNodeId, nodes],
   );
+
+  // ── Label editing ──
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [labelDraft, setLabelDraft] = useState('');
+  const labelInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (node) setLabelDraft(node.label);
+    setEditingLabel(false);
+  }, [node?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (editingLabel) labelInputRef.current?.select();
+  }, [editingLabel]);
+
+  const commitLabel = useCallback(() => {
+    if (!node) return;
+    const trimmed = labelDraft.trim();
+    if (trimmed && trimmed !== node.label) {
+      pushAction({ type: 'updateNode', targetId: node.id, before: { label: node.label }, after: { label: trimmed } });
+      updateNode(node.id, { label: trimmed });
+    } else {
+      setLabelDraft(node.label);
+    }
+    setEditingLabel(false);
+  }, [node, labelDraft, updateNode, pushAction]);
 
   // 연결된 노드 목록
   const connectedNodes = useMemo(() => {
@@ -70,7 +99,7 @@ export function NodeInfoPanel() {
 
   return (
     <div style={panelStyle}>
-      {/* Header: label + type */}
+      {/* Header: label (double-click to edit) + type */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
         <span style={{
           width: 8,
@@ -80,9 +109,28 @@ export function NodeInfoPanel() {
           flexShrink: 0,
           ...PATTERN_CSS[node.type as NodeType],
         }} />
-        <span style={{ fontSize: 13, fontWeight: 400, color: '#1a1a1a' }}>
-          {node.label}
-        </span>
+        {editingLabel ? (
+          <input
+            ref={labelInputRef}
+            value={labelDraft}
+            onChange={(e) => setLabelDraft(e.target.value)}
+            onBlur={commitLabel}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitLabel(); if (e.key === 'Escape') { setLabelDraft(node.label); setEditingLabel(false); } }}
+            style={{
+              flex: 1, border: '1px solid rgba(0,0,0,0.15)', borderRadius: 4,
+              padding: '2px 5px', fontSize: 13, fontFamily: 'inherit', fontWeight: 400,
+              color: '#1a1a1a', outline: 'none', background: '#fff', boxSizing: 'border-box',
+            }}
+          />
+        ) : (
+          <span
+            onDoubleClick={() => setEditingLabel(true)}
+            title="더블클릭하여 이름 수정"
+            style={{ fontSize: 13, fontWeight: 400, color: '#1a1a1a', cursor: 'text' }}
+          >
+            {node.label}
+          </span>
+        )}
         <span style={{ fontSize: 10, color: '#999', marginLeft: 2 }}>
           {typeLabel}
         </span>

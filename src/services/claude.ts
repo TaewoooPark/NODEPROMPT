@@ -86,6 +86,38 @@ export function cancelRequest() {
   streamController = null;
 }
 
+// ── 노드 설명 자동 생성 ──
+
+export async function generateNodeDescription(
+  label: string,
+  type: string,
+  originalPrompt: string,
+): Promise<string> {
+  const key = getApiKey();
+  if (!key) throw new Error('API 키가 설정되지 않았습니다.');
+
+  const res = await fetch(`${API_BASE}/messages`, {
+    method: 'POST',
+    headers: headers(),
+    signal: AbortSignal.timeout(15_000),
+    body: JSON.stringify({
+      model: EXTRACTION_MODEL,
+      max_tokens: 150,
+      temperature: 0.3,
+      system: 'You are a concise concept describer. Write a 1-2 sentence description of the given concept node. Respond ONLY with the description text, nothing else. Match the language of the original prompt.',
+      messages: [{
+        role: 'user',
+        content: `Original prompt: "${originalPrompt}"\n\nNode label: "${label}"\nNode type: ${type}\n\nWrite a brief description:`,
+      }],
+    }),
+  });
+
+  if (!res.ok) throw new Error(`API 오류: ${res.status}`);
+  const data = await res.json();
+  const text = data.content?.[0]?.text ?? '';
+  return text.trim();
+}
+
 // ── 노드 추출 (tool_use 기반 구조화 출력) ──
 
 async function callClaudeExtract(

@@ -1,9 +1,10 @@
-import { useMemo, useCallback, type CSSProperties } from 'react';
+import { useMemo, useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
 import type { NodeType } from '../types';
 import { useGraphStore } from '../store/useGraphStore';
 import { useHistoryStore } from '../store/useHistoryStore';
 import { PATTERN_CSS, TYPE_LABELS_KO, ALL_NODE_TYPES } from '../utils/nodePatterns';
 import { invalidateHighlightCache } from '../utils/highlightState';
+import { generateNodeDescription } from '../services/claude';
 
 const panelStyle: CSSProperties = {
   position: 'fixed',
@@ -41,13 +42,41 @@ const btnBase: CSSProperties = {
   transition: 'background 0.1s ease',
 };
 
-/**
- * 노드 선택 시 우측에 표시되는 편집 패널.
- * 가중치 슬라이더, 타입 변경, 삭제/복원, 엣지 연결.
- */
+const inputStyle: CSSProperties = {
+  width: '100%',
+  border: '1px solid rgba(0,0,0,0.15)',
+  borderRadius: 4,
+  padding: '3px 6px',
+  fontSize: 13,
+  fontFamily: 'inherit',
+  fontWeight: 400,
+  color: '#1a1a1a',
+  outline: 'none',
+  background: '#fff',
+  boxSizing: 'border-box',
+};
+
+const textareaStyle: CSSProperties = {
+  width: '100%',
+  border: '1px solid rgba(0,0,0,0.12)',
+  borderRadius: 4,
+  padding: '4px 6px',
+  fontSize: 11,
+  fontFamily: 'inherit',
+  fontWeight: 300,
+  color: '#555',
+  outline: 'none',
+  background: '#fff',
+  resize: 'vertical',
+  minHeight: 44,
+  lineHeight: 1.5,
+  boxSizing: 'border-box',
+};
+
 export function NodeEditPanel() {
   const selectedNodeId = useGraphStore((s) => s.selectedNodeId);
   const nodes = useGraphStore((s) => s.nodes);
+  const originalPrompt = useGraphStore((s) => s.originalPrompt);
   const updateNode = useGraphStore((s) => s.updateNode);
   const softDeleteNode = useGraphStore((s) => s.softDeleteNode);
   const restoreNode = useGraphStore((s) => s.restoreNode);
@@ -60,16 +89,72 @@ export function NodeEditPanel() {
     [selectedNodeId, nodes],
   );
 
+  // ── Label editing ──
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [labelDraft, setLabelDraft] = useState('');
+  const labelInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Description editing ──
+  const [descDraft, setDescDraft] = useState('');
+  const [descFocused, setDescFocused] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  // Sync drafts when node changes
+  useEffect(() => {
+    if (node) {
+      setLabelDraft(node.label);
+      setDescDraft(node.description);
+    }
+    setEditingLabel(false);
+  }, [node?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-focus label input
+  useEffect(() => {
+    if (editingLabel) labelInputRef.current?.select();
+  }, [editingLabel]);
+
+  const commitLabel = useCallback(() => {
+    if (!node) return;
+    const trimmed = labelDraft.trim();
+    if (trimmed && trimmed !== node.label) {
+      pushAction({ type: 'updateNode', targetId: node.id, before: { label: node.label }, after: { label: trimmed } });
+      updateNode(node.id, { label: trimmed });
+    } else {
+      setLabelDraft(node.label);
+    }
+    setEditingLabel(false);
+  }, [node, labelDraft, updateNode, pushAction]);
+
+  const commitDesc = useCallback(() => {
+    if (!node) return;
+    const trimmed = descDraft.trim();
+    if (trimmed !== node.description) {
+      pushAction({ type: 'updateNode', targetId: node.id, before: { description: node.description }, after: { description: trimmed } });
+      updateNode(node.id, { description: trimmed });
+    }
+    setDescFocused(false);
+  }, [node, descDraft, updateNode, pushAction]);
+
+  const handleAutoGenerate = useCallback(async () => {
+    if (!node || generating) return;
+    setGenerating(true);
+    try {
+      const desc = await generateNodeDescription(node.label, node.type, originalPrompt);
+      setDescDraft(desc);
+      pushAction({ type: 'updateNode', targetId: node.id, before: { description: node.description }, after: { description: desc } });
+      updateNode(node.id, { description: desc });
+    } catch {
+      // silently fail
+    } finally {
+      setGenerating(false);
+    }
+  }, [node, generating, originalPrompt, updateNode, pushAction]);
+
   const handleWeightChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!node) return;
       const newWeight = parseFloat(e.target.value);
-      pushAction({
-        type: 'updateNode',
-        targetId: node.id,
-        before: { weight: node.weight },
-        after: { weight: newWeight },
-      });
+      pushAction({ type: 'updateNode', targetId: node.id, before: { weight: node.weight }, after: { weight: newWeight } });
       updateNode(node.id, { weight: newWeight });
     },
     [node, updateNode, pushAction],
@@ -78,12 +163,7 @@ export function NodeEditPanel() {
   const handleTypeChange = useCallback(
     (t: NodeType) => {
       if (!node || node.type === t) return;
-      pushAction({
-        type: 'updateNode',
-        targetId: node.id,
-        before: { type: node.type },
-        after: { type: t },
-      });
+      pushAction({ type: 'updateNode', targetId: node.id, before: { type: node.type }, after: { type: t } });
       updateNode(node.id, { type: t });
     },
     [node, updateNode, pushAction],
@@ -92,24 +172,14 @@ export function NodeEditPanel() {
   const handleDelete = useCallback(() => {
     if (!node) return;
     softDeleteNode(node.id);
-    pushAction({
-      type: 'softDeleteNode',
-      targetId: node.id,
-      before: { isDeleted: false },
-      after: { isDeleted: true },
-    });
+    pushAction({ type: 'softDeleteNode', targetId: node.id, before: { isDeleted: false }, after: { isDeleted: true } });
     setSelectedId(null);
   }, [node, softDeleteNode, pushAction, setSelectedId]);
 
   const handleRestore = useCallback(() => {
     if (!node) return;
     restoreNode(node.id);
-    pushAction({
-      type: 'restoreNode',
-      targetId: node.id,
-      before: { isDeleted: true },
-      after: { isDeleted: false },
-    });
+    pushAction({ type: 'restoreNode', targetId: node.id, before: { isDeleted: true }, after: { isDeleted: false } });
   }, [node, restoreNode, pushAction]);
 
   const handleEdgeStart = useCallback(() => {
@@ -124,17 +194,58 @@ export function NodeEditPanel() {
 
   return (
     <div style={panelStyle}>
-      {/* Header */}
+      {/* Header — label (double-click to edit) */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{
           width: 8, height: 8, borderRadius: '50%',
           border: '0.5px solid rgba(0,0,0,0.15)', flexShrink: 0,
           ...PATTERN_CSS[node.type as NodeType],
         }} />
-        <span style={{ fontSize: 13, fontWeight: 400, color: '#1a1a1a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {node.label}
-        </span>
+        {editingLabel ? (
+          <input
+            ref={labelInputRef}
+            value={labelDraft}
+            onChange={(e) => setLabelDraft(e.target.value)}
+            onBlur={commitLabel}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitLabel(); if (e.key === 'Escape') { setLabelDraft(node.label); setEditingLabel(false); } }}
+            style={{ ...inputStyle, flex: 1 }}
+          />
+        ) : (
+          <span
+            onDoubleClick={() => setEditingLabel(true)}
+            title="더블클릭하여 이름 수정"
+            style={{ fontSize: 13, fontWeight: 400, color: '#1a1a1a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'text' }}
+          >
+            {node.label}
+          </span>
+        )}
       </div>
+
+      {/* Description */}
+      <div style={{ ...sectionLabel, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>Description</span>
+        <button
+          onClick={handleAutoGenerate}
+          disabled={generating}
+          style={{
+            ...btnBase,
+            padding: '1px 6px',
+            fontSize: 9,
+            opacity: generating ? 0.5 : 1,
+            cursor: generating ? 'wait' : 'pointer',
+          }}
+        >
+          {generating ? '...' : 'Auto'}
+        </button>
+      </div>
+      <textarea
+        value={descDraft}
+        onChange={(e) => setDescDraft(e.target.value)}
+        onFocus={() => setDescFocused(true)}
+        onBlur={commitDesc}
+        placeholder="설명을 입력하거나 Auto로 생성"
+        style={textareaStyle}
+      />
 
       {/* Weight slider */}
       <div style={sectionLabel}>Weight — {weightPct}%</div>
