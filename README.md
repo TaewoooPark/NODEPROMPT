@@ -400,5 +400,5 @@ MIT
 ---
 
 <p align="center">
-Built with React Three Fiber, Three.js, Zustand, GSAP, D3, and Claude API.
+Built with React Three Fiber, Three.js, Zustand, GSAP, and D3.
 </p>

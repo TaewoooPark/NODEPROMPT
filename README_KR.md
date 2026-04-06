@@ -401,5 +401,5 @@ MIT
 ---
 
 <p align="center">
-React Three Fiber, Three.js, Zustand, GSAP, D3, Claude API로 제작되었습니다.
+React Three Fiber, Three.js, Zustand, GSAP, D3로 제작되었습니다.
 </p>
