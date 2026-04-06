@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect, type CSSProperties } from 'react';
+import { useLanguageStore } from '../i18n/useLanguage';
+import { useT } from '../i18n/useLanguage';
 
 const btnStyle: CSSProperties = {
   position: 'fixed',
@@ -22,6 +24,29 @@ const btnStyle: CSSProperties = {
   transition: 'background 0.15s ease',
 };
 
+const langBtnStyle: CSSProperties = {
+  position: 'fixed',
+  left: 50,
+  top: 16,
+  height: 28,
+  borderRadius: 14,
+  border: '1px solid rgba(0,0,0,0.15)',
+  background: 'rgba(255,255,255,0.85)',
+  backdropFilter: 'blur(10px)',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: 10,
+  fontWeight: 400,
+  color: '#555',
+  fontFamily: '"DM Sans", "IBM Plex Sans", sans-serif',
+  zIndex: 110,
+  transition: 'background 0.15s ease',
+  padding: '0 10px',
+  letterSpacing: '0.02em',
+};
+
 const overlayStyle: CSSProperties = {
   position: 'fixed',
   inset: 0,
@@ -38,7 +63,7 @@ const cardStyle: CSSProperties = {
   border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: 12,
   padding: '24px 32px',
-  maxWidth: 420,
+  maxWidth: 720,
   width: '90vw',
   fontFamily: '"DM Sans", "IBM Plex Sans", sans-serif',
   color: '#1a1a1a',
@@ -85,6 +110,9 @@ function Row({ label, shortcut }: { label: string; shortcut: string }) {
 
 export function HelpOverlay() {
   const [open, setOpen] = useState(false);
+  const t = useT();
+  const lang = useLanguageStore((s) => s.lang);
+  const toggleLang = useLanguageStore((s) => s.toggleLang);
 
   const toggle = useCallback(() => setOpen((v) => !v), []);
 
@@ -111,52 +139,65 @@ export function HelpOverlay() {
         ?
       </button>
 
+      <button
+        style={langBtnStyle}
+        onClick={toggleLang}
+        title={lang === 'ko' ? 'Switch to English' : '한국어로 전환'}
+      >
+        {lang === 'ko' ? 'EN' : '한'}
+      </button>
+
       {open && (
         <div style={overlayStyle} onClick={toggle}>
           <div style={cardStyle} onClick={(e) => e.stopPropagation()}>
-            <div style={{ fontSize: 15, fontWeight: 400, marginBottom: 4 }}>
-              Keyboard Shortcuts
+            <div style={{ fontSize: 15, fontWeight: 400, marginBottom: 12 }}>
+              {t('help.title')}
             </div>
 
-            <div style={sectionTitle}>Navigation</div>
-            <Row label="Sphere / Radial 전환" shortcut="Space" />
-            <Row label="더블클릭으로도 전환" shortcut="Double-click" />
-            <Row label="카메라 홈" shortcut="H" />
-            <Row label="줌" shortcut="Scroll" />
-            <Row label="회전 (Sphere)" shortcut="Drag" />
+            <div style={{ display: 'flex', gap: 32 }}>
+              {/* ── Left column ── */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={sectionTitle}>{t('help.nav')}</div>
+                <Row label={t('help.switchMode')} shortcut="Space" />
+                <Row label={t('help.switchModeDbl')} shortcut="Double-click" />
+                <Row label={t('help.cameraHome')} shortcut="H" />
+                <Row label={t('help.zoom')} shortcut="Scroll" />
+                <Row label={t('help.rotate')} shortcut="Drag" />
 
-            <div style={sectionTitle}>Node</div>
-            <Row label="노드 선택 / 포커싱" shortcut="Click" />
-            <Row label="재클릭으로 포커싱 해제" shortcut="Click again" />
-            <Row label="선택 해제" shortcut="Esc" />
-            <Row label="노드 드래그 (Radial)" shortcut="Drag" />
-            <Row label="가중치 증가" shortcut="] / +" />
-            <Row label="가중치 감소" shortcut="[ / -" />
-            <Row label="가중치 휠 조절 (Radial)" shortcut="Wheel on node" />
-            <Row label="노드 삭제 (Radial)" shortcut="Backspace" />
+                <div style={sectionTitle}>{t('help.node')}</div>
+                <Row label={t('help.selectFocus')} shortcut="Click" />
+                <Row label={t('help.unfocus')} shortcut="Click again" />
+                <Row label={t('help.deselect')} shortcut="Esc" />
+                <Row label={t('help.dragNode')} shortcut="Drag" />
+                <Row label={t('help.weightUp')} shortcut="] / +" />
+                <Row label={t('help.weightDown')} shortcut="[ / -" />
+                <Row label={t('help.weightWheel')} shortcut="Wheel on node" />
+                <Row label={t('help.deleteNode')} shortcut="Backspace" />
+              </div>
 
-            <div style={sectionTitle}>Edge</div>
-            <Row label="엣지 생성 시작/완성" shortcut="Shift + Click" />
-            <Row label="엣지 생성 취소" shortcut="Esc" />
+              {/* ── Right column ── */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={sectionTitle}>{t('help.edge')}</div>
+                <Row label={t('help.edgeStart')} shortcut="Shift + Click" />
+                <Row label={t('help.edgeCancel')} shortcut="Esc" />
 
-            <div style={sectionTitle}>Display</div>
-            <Row label="라벨 토글" shortcut="L" />
-            <Row label="Undo" shortcut="Ctrl + Z" />
-            <Row label="Redo" shortcut="Ctrl + Shift + Z" />
-            <Row label="이 도움말" shortcut="?" />
+                <div style={sectionTitle}>{t('help.display')}</div>
+                <Row label={t('help.toggleLabels')} shortcut="L" />
+                <Row label="Undo" shortcut="Ctrl + Z" />
+                <Row label="Redo" shortcut="Ctrl + Shift + Z" />
+                <Row label={t('help.thisHelp')} shortcut="?" />
 
-            <div style={sectionTitle}>Hand Gesture (Sphere)</div>
-            <Row label="제스처 ON/OFF" shortcut="하단 좌측 토글 버튼" />
-            <Row label="구 회전" shortcut="손바닥 펴고 드래그" />
-            <Row label="회전 정지" shortcut="주먹 쥐기" />
-            <Row label="줌 인/아웃" shortcut="손 크기 변화" />
+                <div style={sectionTitle}>{t('help.gesture')}</div>
+                <Row label={t('help.gestureToggle')} shortcut={t('help.gestureToggleShortcut')} />
+                <Row label={t('help.rotateSphere')} shortcut={t('help.rotateSphereShortcut')} />
+                <Row label={t('help.stopRotation')} shortcut={t('help.stopRotationShortcut')} />
+                <Row label={t('help.zoomInOut')} shortcut={t('help.zoomInOutShortcut')} />
 
-            <div style={{ ...sectionTitle, marginTop: 20 }}>Tip</div>
-            <div style={{ fontSize: 11, fontWeight: 300, color: '#666', lineHeight: 1.6 }}>
-              노드를 클릭하면 연결된 노드만 강조됩니다.
-              다시 클릭하면 포커싱이 풀립니다.
-              우클릭으로 컨텍스트 메뉴를 열 수 있습니다.
-              하단 좌측 버튼으로 웹캠 제스처 컨트롤을 활성화할 수 있습니다.
+                <div style={{ ...sectionTitle, marginTop: 20 }}>{t('help.tip')}</div>
+                <div style={{ fontSize: 11, fontWeight: 300, color: '#666', lineHeight: 1.6 }}>
+                  {t('help.tipText')}
+                </div>
+              </div>
             </div>
 
             <button
@@ -175,7 +216,7 @@ export function HelpOverlay() {
                 cursor: 'pointer',
               }}
             >
-              Close
+              {t('help.close')}
             </button>
           </div>
         </div>

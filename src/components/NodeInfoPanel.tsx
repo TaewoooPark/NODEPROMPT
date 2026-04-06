@@ -1,8 +1,9 @@
 import { useMemo, useCallback, useState, useRef, useEffect, type CSSProperties } from 'react';
 import { useGraphStore } from '../store/useGraphStore';
 import { useHistoryStore } from '../store/useHistoryStore';
-import { PATTERN_CSS, TYPE_LABELS_KO } from '../utils/nodePatterns';
+import { PATTERN_CSS } from '../utils/nodePatterns';
 import type { NodeType } from '../types';
+import { useT, useTypeLabels } from '../i18n/useLanguage';
 
 const panelStyle: CSSProperties = {
   position: 'fixed',
@@ -32,6 +33,8 @@ export function NodeInfoPanel() {
   const setSelectedId = useGraphStore((s) => s.setSelectedNodeId);
   const updateNode = useGraphStore((s) => s.updateNode);
   const pushAction = useHistoryStore((s) => s.pushAction);
+  const t = useT();
+  const typeLabels = useTypeLabels();
 
   const node = useMemo(
     () => (selectedNodeId ? nodes.get(selectedNodeId) ?? null : null),
@@ -94,7 +97,7 @@ export function NodeInfoPanel() {
 
   if (!node) return null;
 
-  const typeLabel = TYPE_LABELS_KO[node.type as NodeType] ?? node.type;
+  const typeLabel = typeLabels[node.type as NodeType] ?? node.type;
   const weightPct = Math.round(node.weight * 100);
 
   return (
@@ -125,7 +128,7 @@ export function NodeInfoPanel() {
         ) : (
           <span
             onDoubleClick={() => setEditingLabel(true)}
-            title="더블클릭하여 이름 수정"
+            title={t('edit.dblClickLabel')}
             style={{ fontSize: 13, fontWeight: 400, color: '#1a1a1a', cursor: 'text' }}
           >
             {node.label}

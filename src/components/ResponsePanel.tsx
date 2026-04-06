@@ -4,6 +4,7 @@ import { synthesizePrompt } from '../services/synthesizer';
 import { streamResponse, cancelRequest } from '../services/claude';
 import { detectLanguage } from '../services/prompts';
 import { highlightConcepts } from '../utils/highlightConcepts';
+import { useT } from '../i18n/useLanguage';
 
 const containerStyle: CSSProperties = {
   position: 'fixed',
@@ -51,6 +52,7 @@ export function ResponsePanel() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSynthesized, setShowSynthesized] = useState(false);
   const lastUpdateRef = useRef(0);
+  const t = useT();
 
   const originalPrompt = useGraphStore((s) => s.originalPrompt);
   const nodeArray = useGraphStore((s) => s.nodeArray);
@@ -82,11 +84,11 @@ export function ResponsePanel() {
       }
       setResponse(buffer);
     } catch (e) {
-      setResponse(buffer + `\n\n[오류: ${(e as Error).message}]`);
+      setResponse(buffer + `\n\n[${t('resp.error')}: ${(e as Error).message}]`);
     } finally {
       setIsGenerating(false);
     }
-  }, [isGenerating, originalPrompt, nodeArray, edges, setResponse, setSynthesizedPrompt]);
+  }, [isGenerating, originalPrompt, nodeArray, edges, setResponse, setSynthesizedPrompt, t]);
 
   const handleCancel = useCallback(() => {
     cancelRequest();
@@ -105,7 +107,7 @@ export function ResponsePanel() {
           style={{ fontSize: 10, color: '#666', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
           onClick={() => setShowSynthesized((v) => !v)}
         >
-          {showSynthesized ? '응답 보기' : '합성 프롬프트 보기'}
+          {showSynthesized ? t('resp.viewResponse') : t('resp.viewSynthesized')}
         </button>
       </div>
 
@@ -115,7 +117,7 @@ export function ResponsePanel() {
         <div style={responseStyle}>
           {response
             ? highlightConcepts(response, nodeArray)
-            : '답변을 생성하면 여기에 표시됩니다.'}
+            : t('resp.placeholder')}
         </div>
       )}
 
@@ -125,7 +127,7 @@ export function ResponsePanel() {
             style={{ ...btnStyle, background: '#c00', color: '#fff', flex: 1 }}
             onClick={handleCancel}
           >
-            취소
+            {t('resp.cancel')}
           </button>
         ) : (
           <button
@@ -139,13 +141,13 @@ export function ResponsePanel() {
             onClick={handleGenerate}
             disabled={nodeArray.length === 0}
           >
-            답변 생성
+            {t('resp.generate')}
           </button>
         )}
       </div>
 
       {isGenerating && (
-        <div style={{ fontSize: 12, color: '#666' }}>답변 생성 중...</div>
+        <div style={{ fontSize: 12, color: '#666' }}>{t('resp.generating')}</div>
       )}
     </div>
   );

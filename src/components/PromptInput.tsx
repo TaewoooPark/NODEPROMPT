@@ -4,6 +4,7 @@ import { scaffoldNodes, fillNodes, validateGraph, createExtractController, cance
 import { mapHierarchicalToSphere } from '../services/mapNodesToSphere';
 import { computeBranchingFactor } from '../types/extraction';
 import type { NodeData, EdgeData } from '../types';
+import { useT } from '../i18n/useLanguage';
 
 const containerStyle: CSSProperties = {
   position: 'fixed',
@@ -68,6 +69,7 @@ export function PromptInput() {
   const setExtractionConfig = useGraphStore((s) => s.setExtractionConfig);
   const setExtractionProgress = useGraphStore((s) => s.setExtractionProgress);
   const extractionProgress = useGraphStore((s) => s.extractionProgress);
+  const t = useT();
 
   const branchingFactor = computeBranchingFactor(extractionConfig.maxNodes, extractionConfig.maxDepth);
 
@@ -83,7 +85,7 @@ export function PromptInput() {
     const config = { ...extractionConfig, branchingFactor };
 
     try {
-      // ── Phase 1: Scaffold — 구조 설계 ──
+      // ── Phase 1: Scaffold ──
       setExtractionProgress({ pass: 1, total: 3, nodesSoFar: 0 });
       const skeleton = await scaffoldNodes(prompt, config, controller.signal);
 
@@ -111,7 +113,7 @@ export function PromptInput() {
       replaceGraph(nodes, edges);
       setExtractionProgress({ pass: 1, total: 3, nodesSoFar: skeleton.length });
 
-      // ── Phase 2: Fill — 내용 채움 ──
+      // ── Phase 2: Fill ──
       setExtractionProgress({ pass: 2, total: 3, nodesSoFar: 0 });
       const fills = await fillNodes(prompt, skeleton, controller.signal);
 
@@ -129,7 +131,7 @@ export function PromptInput() {
         if (i < fills.length - 1) await new Promise((r) => setTimeout(r, 40));
       }
 
-      // ── Phase 3: Validate — 검증 및 패치 ──
+      // ── Phase 3: Validate ──
       setExtractionProgress({ pass: 3, total: 3, nodesSoFar: fills.length });
       try {
         const fullNodes = skeleton.map((s) => {
@@ -178,10 +180,10 @@ export function PromptInput() {
           }
         }
       } catch {
-        console.warn('Phase 3 (validate) 실패, 기존 그래프 유지');
+        console.warn('Phase 3 (validate) failed, keeping existing graph');
       }
 
-      // ── Final sweep: 여전히 플레이스홀더인 노드 보정 ──
+      // ── Final sweep ──
       {
         const sweepStore = useGraphStore.getState();
         const placeholderPattern = /^(detail|concept|case|theme|sub)\s*[-\s]?\d/i;
@@ -199,7 +201,6 @@ export function PromptInput() {
             node.description.endsWith('(자동 생성)');
 
           if (needsFix) {
-            // 부모/형제 노드의 라벨을 참조하여 컨텍스트 기반 라벨 생성
             const parent = s.parentId ? sweepStore.nodes.get(s.parentId) : null;
             const siblings = skeleton
               .filter((sib) => sib.parentId === s.parentId && sib.id !== s.id)
@@ -238,7 +239,7 @@ export function PromptInput() {
       }
     } catch (e) {
       if ((e as Error).name === 'AbortError') {
-        setError('요청이 취소되었습니다.');
+        setError(t('prompt.cancelled'));
       } else {
         setError((e as Error).message);
       }
@@ -246,7 +247,7 @@ export function PromptInput() {
       setProcessing(false);
       setExtractionProgress(null);
     }
-  }, [text, isProcessing, sphereRadius, replaceGraph, setOriginalPrompt, setProcessing, extractionConfig, branchingFactor, setExtractionProgress]);
+  }, [text, isProcessing, sphereRadius, replaceGraph, setOriginalPrompt, setProcessing, extractionConfig, branchingFactor, setExtractionProgress, t]);
 
   const handleCancel = useCallback(() => {
     cancelRequest();
@@ -261,7 +262,7 @@ export function PromptInput() {
         style={textareaStyle}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder="프롬프트를 입력하세요..."
+        placeholder={t('prompt.placeholder')}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
@@ -272,7 +273,7 @@ export function PromptInput() {
 
       {/* D/N 슬라이더 */}
       <div style={sliderRow}>
-        <span style={{ width: 50 }}>깊이 D:{extractionConfig.maxDepth}</span>
+        <span style={{ width: 50 }}>{t('prompt.depth')} D:{extractionConfig.maxDepth}</span>
         <input
           type="range" min={1} max={5} step={1}
           value={extractionConfig.maxDepth}
@@ -281,20 +282,20 @@ export function PromptInput() {
         />
       </div>
       <div style={sliderRow}>
-        <span style={{ width: 50 }}>노드 N:{extractionConfig.maxNodes}</span>
+        <span style={{ width: 50 }}>{t('prompt.nodes')} N:{extractionConfig.maxNodes}</span>
         <input
           type="range" min={5} max={100} step={1}
           value={extractionConfig.maxNodes}
           onChange={(e) => setExtractionConfig({ maxNodes: parseInt(e.target.value) })}
           style={{ flex: 1, height: 2, appearance: 'none', WebkitAppearance: 'none', background: 'rgba(0,0,0,0.15)', borderRadius: 1, outline: 'none', cursor: 'pointer' }}
         />
-        <span style={{ color: '#999', fontSize: 10 }}>분기:{branchingFactor}</span>
+        <span style={{ color: '#999', fontSize: 10 }}>{t('prompt.branch')}:{branchingFactor}</span>
       </div>
 
       <div style={{ display: 'flex', gap: 8 }}>
         {isProcessing ? (
           <button style={{ ...btnStyle, background: '#c00', color: '#fff', flex: 1 }} onClick={handleCancel}>
-            취소
+            {t('prompt.cancel')}
           </button>
         ) : (
           <button
@@ -302,7 +303,7 @@ export function PromptInput() {
             onClick={handleExtract}
             disabled={!text.trim()}
           >
-            분석 (Ctrl+Enter)
+            {t('prompt.analyze')}
           </button>
         )}
       </div>
@@ -311,9 +312,9 @@ export function PromptInput() {
         <div style={{ fontSize: 12, color: '#666' }}>
           Phase {extractionProgress.pass}/{extractionProgress.total}
           {' — '}
-          {extractionProgress.pass === 1 && '구조 설계'}
-          {extractionProgress.pass === 2 && `내용 채움${extractionProgress.nodesSoFar > 0 ? ` (${extractionProgress.nodesSoFar}/${extractionConfig.maxNodes})` : ''}`}
-          {extractionProgress.pass === 3 && '검증 및 패치'}
+          {extractionProgress.pass === 1 && t('prompt.phase1')}
+          {extractionProgress.pass === 2 && `${t('prompt.phase2')}${extractionProgress.nodesSoFar > 0 ? ` (${extractionProgress.nodesSoFar}/${extractionConfig.maxNodes})` : ''}`}
+          {extractionProgress.pass === 3 && t('prompt.phase3')}
         </div>
       )}
       {error && (

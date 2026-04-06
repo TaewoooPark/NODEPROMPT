@@ -2,9 +2,10 @@ import { useMemo, useCallback, useState, useRef, useEffect, type CSSProperties }
 import type { NodeType } from '../types';
 import { useGraphStore } from '../store/useGraphStore';
 import { useHistoryStore } from '../store/useHistoryStore';
-import { PATTERN_CSS, TYPE_LABELS_KO, ALL_NODE_TYPES } from '../utils/nodePatterns';
+import { PATTERN_CSS, ALL_NODE_TYPES } from '../utils/nodePatterns';
 import { invalidateHighlightCache } from '../utils/highlightState';
 import { generateNodeDescription } from '../services/claude';
+import { useT, useTypeLabels } from '../i18n/useLanguage';
 
 const panelStyle: CSSProperties = {
   position: 'fixed',
@@ -83,6 +84,8 @@ export function NodeEditPanel() {
   const startEdgeCreation = useGraphStore((s) => s.startEdgeCreation);
   const setSelectedId = useGraphStore((s) => s.setSelectedNodeId);
   const pushAction = useHistoryStore((s) => s.pushAction);
+  const t = useT();
+  const typeLabels = useTypeLabels();
 
   const node = useMemo(
     () => (selectedNodeId ? nodes.get(selectedNodeId) ?? null : null),
@@ -213,7 +216,7 @@ export function NodeEditPanel() {
         ) : (
           <span
             onDoubleClick={() => setEditingLabel(true)}
-            title="더블클릭하여 이름 수정"
+            title={t('edit.dblClickLabel')}
             style={{ fontSize: 13, fontWeight: 400, color: '#1a1a1a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'text' }}
           >
             {node.label}
@@ -243,7 +246,7 @@ export function NodeEditPanel() {
         onChange={(e) => setDescDraft(e.target.value)}
         onFocus={() => setDescFocused(true)}
         onBlur={commitDesc}
-        placeholder="설명을 입력하거나 Auto로 생성"
+        placeholder={t('edit.descPlaceholder')}
         style={textareaStyle}
       />
 
@@ -271,25 +274,25 @@ export function NodeEditPanel() {
       {/* Type selector */}
       <div style={sectionLabel}>Type</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-        {ALL_NODE_TYPES.map((t) => (
+        {ALL_NODE_TYPES.map((tp) => (
           <button
-            key={t}
-            onClick={() => handleTypeChange(t)}
+            key={tp}
+            onClick={() => handleTypeChange(tp)}
             style={{
               ...btnBase,
               display: 'flex',
               alignItems: 'center',
               gap: 4,
-              background: node.type === t ? 'rgba(0,0,0,0.06)' : 'none',
-              fontWeight: node.type === t ? 400 : 300,
+              background: node.type === tp ? 'rgba(0,0,0,0.06)' : 'none',
+              fontWeight: node.type === tp ? 400 : 300,
             }}
           >
             <span style={{
               width: 6, height: 6, borderRadius: '50%',
               border: '0.5px solid rgba(0,0,0,0.15)',
-              ...PATTERN_CSS[t],
+              ...PATTERN_CSS[tp],
             }} />
-            {TYPE_LABELS_KO[t]}
+            {typeLabels[tp]}
           </button>
         ))}
       </div>
@@ -299,15 +302,15 @@ export function NodeEditPanel() {
       <div style={{ display: 'flex', gap: 6 }}>
         {node.isDeleted ? (
           <button onClick={handleRestore} style={btnBase}>
-            복원
+            {t('edit.restore')}
           </button>
         ) : (
           <>
             <button onClick={handleDelete} style={btnBase}>
-              삭제
+              {t('edit.delete')}
             </button>
             <button onClick={handleEdgeStart} style={btnBase}>
-              엣지 연결
+              {t('edit.connectEdge')}
             </button>
           </>
         )}

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, type CSSProperties } from 're
 import { useGraphStore } from '../store/useGraphStore';
 import { checkClaudeConnection, setApiKey, getSavedApiKey } from '../services/claude';
 import { loadDemoData } from '../utils/demoData';
+import { useT } from '../i18n/useLanguage';
 
 const barStyle: CSSProperties = {
   position: 'fixed',
@@ -63,6 +64,7 @@ export function Toolbar() {
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [keyDraft, setKeyDraft] = useState('');
   const keyInputRef = useRef<HTMLInputElement>(null);
+  const t = useT();
 
   // API 키 존재 여부 (마스킹 표시용)
   const hasKey = Boolean(getSavedApiKey());
@@ -73,7 +75,6 @@ export function Toolbar() {
       setApiKey(trimmed);
       setKeyDraft('');
       setShowKeyInput(false);
-      // 즉시 연결 확인
       checkClaudeConnection().then(setClaudeOk);
     }
   }, [keyDraft]);
@@ -81,8 +82,8 @@ export function Toolbar() {
   const handleDemo = useCallback(() => {
     const { nodes, edges } = loadDemoData(sphereRadius);
     replaceGraph(nodes, edges);
-    setOriginalPrompt('AI가 인간 사회에 미치는 다층적 영향');
-  }, [sphereRadius, replaceGraph, setOriginalPrompt]);
+    setOriginalPrompt(t('toolbar.demoPrompt'));
+  }, [sphereRadius, replaceGraph, setOriginalPrompt, t]);
 
   const handleReset = useCallback(() => {
     replaceGraph([], []);
@@ -182,7 +183,7 @@ export function Toolbar() {
             setShowKeyInput((v) => !v);
             setTimeout(() => keyInputRef.current?.focus(), 50);
           }}
-          title="API Key 설정"
+          title={t('toolbar.apiKeySettings')}
         >
           {claudeOk === null ? '...' : claudeOk ? 'API' : 'offline'}
           {hasKey && ' ****'}
@@ -233,7 +234,7 @@ export function Toolbar() {
               </button>
             </div>
             <div style={{ fontSize: 9, color: '#999', marginTop: 4, fontWeight: 300 }}>
-              키는 브라우저에만 저장됩니다 (localStorage)
+              {t('toolbar.keyStorageNote')}
             </div>
           </div>
         )}

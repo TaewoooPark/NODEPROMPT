@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type CSSProperties } from 'react';
 import { useGraphStore } from '../store/useGraphStore';
 import { gestureState, start, stop, getVideoElement } from '../gesture/gestureEngine';
+import { useT } from '../i18n/useLanguage';
 
 // ── 스타일 ──
 const wrapStyle: CSSProperties = {
@@ -74,6 +75,7 @@ export function HandGestureOverlay() {
     error: null,
   });
   const previewRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   // 토글 핸들러
   const toggle = useCallback(async () => {
@@ -83,7 +85,6 @@ export function HandGestureOverlay() {
     } else {
       setGestureEnabled(true);
       await start();
-      // start 실패 시 에러 상태 반영
       if (gestureState.error) {
         setGestureEnabled(false);
       }
@@ -140,7 +141,7 @@ export function HandGestureOverlay() {
         ? '#43a047'
         : '#fbc02d';
 
-  // 제스처 라벨 (한국어 매핑)
+  // 제스처 라벨
   const gestureLabel = !gestureEnabled
     ? 'Off'
     : display.error
@@ -162,7 +163,7 @@ export function HandGestureOverlay() {
         <button
           style={btnStyle}
           onClick={toggle}
-          title={gestureEnabled ? '제스처 제어 끄기' : '제스처 제어 켜기'}
+          title={gestureEnabled ? t('gesture.disable') : t('gesture.enable')}
         >
           {gestureEnabled ? '🤚' : '✋'}
         </button>
@@ -172,7 +173,7 @@ export function HandGestureOverlay() {
           <button
             style={{ ...btnStyle, fontSize: 10, opacity: 0.5 }}
             onClick={() => setShowPreview((p) => !p)}
-            title="웹캠 미리보기 토글"
+            title={t('gesture.previewToggle')}
           >
             {showPreview ? '◉' : '◎'}
           </button>

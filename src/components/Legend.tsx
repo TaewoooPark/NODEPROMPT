@@ -1,6 +1,9 @@
-import { ALL_NODE_TYPES, PATTERN_CSS, TYPE_LABELS_KO } from '../utils/nodePatterns';
+import { ALL_NODE_TYPES, PATTERN_CSS } from '../utils/nodePatterns';
+import { useTypeLabels } from '../i18n/useLanguage';
 
 export function Legend() {
+  const typeLabels = useTypeLabels();
+
   return (
     <div style={{
       position: 'fixed',
@@ -33,7 +36,7 @@ export function Legend() {
             flexShrink: 0,
             ...PATTERN_CSS[type],
           }} />
-          <span>{TYPE_LABELS_KO[type]}</span>
+          <span>{typeLabels[type]}</span>
         </div>
       ))}
     </div>

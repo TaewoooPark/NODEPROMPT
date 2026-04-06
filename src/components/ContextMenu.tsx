@@ -7,6 +7,7 @@ import { PATTERN_CSS } from '../utils/nodePatterns';
 import { useHistoryStore } from '../store/useHistoryStore';
 import { getThreeRefs } from '../utils/threeRef';
 import { cartesianToSpherical, radialToSpherical } from '../utils/coordinates';
+import { useT } from '../i18n/useLanguage';
 
 const NODE_TYPES: NodeType[] = ['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context'];
 const MAX_DEPTH = 4;
@@ -109,6 +110,7 @@ export function ContextMenu() {
   const setSelectedNodeId = useGraphStore((s) => s.setSelectedNodeId);
   const startEdgeCreation = useGraphStore((s) => s.startEdgeCreation);
   const pushAction = useHistoryStore((s) => s.pushAction);
+  const t = useT();
 
   // 우클릭 감지 — radial + sphere 모두
   useEffect(() => {
@@ -197,7 +199,7 @@ export function ContextMenu() {
               close();
             }}
           >
-            복원
+            {t('ctx.restore')}
           </div>
         ) : (
           <div
@@ -214,33 +216,33 @@ export function ContextMenu() {
               close();
             }}
           >
-            삭제
+            {t('ctx.delete')}
           </div>
         )}
 
         {/* 타입 변경 */}
         <div style={{ padding: '4px 14px', fontSize: 11, color: '#888', borderTop: '1px solid rgba(0,0,0,0.08)', marginTop: 2 }}>
-          타입 변경
+          {t('ctx.changeType')}
         </div>
-        {NODE_TYPES.map((t) => (
+        {NODE_TYPES.map((tp) => (
           <div
-            key={t}
-            style={{ ...itemStyle, fontWeight: targetNode.type === t ? 700 : 400 }}
+            key={tp}
+            style={{ ...itemStyle, fontWeight: targetNode.type === tp ? 700 : 400 }}
             {...hoverHandlers}
             onClick={() => {
-              if (targetNode.type === t) { close(); return; }
+              if (targetNode.type === tp) { close(); return; }
               pushAction({
                 type: 'updateNode',
                 targetId: targetNode.id,
                 before: { type: targetNode.type },
-                after: { type: t },
+                after: { type: tp },
               });
-              updateNode(targetNode.id, { type: t });
+              updateNode(targetNode.id, { type: tp });
               close();
             }}
           >
-            <span style={{ width: 10, height: 10, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.2)', flexShrink: 0, ...PATTERN_CSS[t] }} />
-            {t}
+            <span style={{ width: 10, height: 10, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.2)', flexShrink: 0, ...PATTERN_CSS[tp] }} />
+            {tp}
           </div>
         ))}
 
@@ -253,7 +255,7 @@ export function ContextMenu() {
               {...hoverHandlers}
               onClick={() => { startEdgeCreation(targetNode.id); close(); }}
             >
-              엣지 연결 시작
+              {t('ctx.startEdge')}
             </div>
           </>
         )}
@@ -284,7 +286,7 @@ export function ContextMenu() {
   return (
     <div style={menuStyle}>
       <div style={itemStyle} {...hoverHandlers} onClick={handleAddNode}>
-        노드 추가
+        {t('ctx.addNode')}
       </div>
       <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', margin: '2px 0' }} />
       <div
@@ -295,7 +297,7 @@ export function ContextMenu() {
           close();
         }}
       >
-        선택 해제
+        {t('ctx.deselect')}
       </div>
     </div>
   );
