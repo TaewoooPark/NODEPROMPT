@@ -6,6 +6,7 @@ import { useGraphStore } from '../store/useGraphStore';
 import { useMorphTransition } from '../hooks/useMorphTransition';
 import { useInteriorTransition } from '../hooks/useInteriorTransition';
 import { useGestureControl } from '../hooks/useGestureControl';
+import { setThreeRefs } from '../utils/threeRef';
 import type { SphereSurfaceHandle } from './SphereSurface';
 
 interface SceneInnerProps {
@@ -20,8 +21,13 @@ interface SceneInnerProps {
  * - 모드별 OrbitControls 설정 (P4-PATCH-4 가드 포함)
  */
 export function SceneInner({ controlsRef, sphereRef }: SceneInnerProps) {
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
   const { morphToRadial, morphToSphere } = useMorphTransition();
+
+  // Canvas 외부(ContextMenu 등)에서 camera/gl 접근 가능하도록 등록
+  useEffect(() => {
+    setThreeRefs(camera, gl);
+  }, [camera, gl]);
 
   // Sphere ↔ Interior 자동 전환
   useInteriorTransition();
@@ -49,7 +55,6 @@ export function SceneInner({ controlsRef, sphereRef }: SceneInnerProps) {
   }, [mode, isTransitioning, camera, morphToRadial, morphToSphere, controlsRef, sphereRef]);
 
   // 더블클릭: Canvas DOM 이벤트로 Sphere ↔ Radial 전환
-  const { gl } = useThree();
   useEffect(() => {
     const canvas = gl.domElement;
     const handler = () => {

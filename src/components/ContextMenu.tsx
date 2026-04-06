@@ -1,10 +1,15 @@
 import { useEffect, useCallback, useState, type CSSProperties } from 'react';
+import * as THREE from 'three';
 import type { NodeType } from '../types';
+import { migrateNodeData } from '../types';
 import { useGraphStore } from '../store/useGraphStore';
 import { PATTERN_CSS } from '../utils/nodePatterns';
 import { useHistoryStore } from '../store/useHistoryStore';
+import { getThreeRefs } from '../utils/threeRef';
+import { cartesianToSpherical, radialToSpherical } from '../utils/coordinates';
 
 const NODE_TYPES: NodeType[] = ['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context'];
+const MAX_DEPTH = 4;
 
 interface MenuState {
   visible: boolean;
@@ -16,30 +21,106 @@ interface MenuState {
 
 const INITIAL: MenuState = { visible: false, x: 0, y: 0, targetNodeId: null, targetEdgeId: null };
 
+/** 화면 좌표 → Radial 모드 3D 좌표 (z=0 평면 교차) */
+function screenToRadialPosition(clientX: number, clientY: number) {
+  const { camera, gl } = getThreeRefs();
+  if (!camera || !gl) return null;
+
+  const rect = gl.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  );
+
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(ndc, camera);
+  const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+  const hit = new THREE.Vector3();
+  raycaster.ray.intersectPlane(plane, hit);
+  if (!hit) return null;
+
+  const x = hit.x;
+  const y = hit.y;
+  const angle = Math.atan2(y, x);
+  const depth = Math.sqrt(x * x + y * y);
+  const sphereCoord = radialToSpherical(angle, depth, MAX_DEPTH);
+
+  return { position: { x, y, z: 0 }, radialCoord: { angle, depth }, sphereCoord };
+}
+
+/** 화면 좌표 → Sphere 모드 3D 좌표 (구 표면 교차) */
+function screenToSpherePosition(clientX: number, clientY: number) {
+  const { camera, gl } = getThreeRefs();
+  if (!camera || !gl) return null;
+  const sphereRadius = useGraphStore.getState().sphereRadius;
+
+  const rect = gl.domElement.getBoundingClientRect();
+  const ndc = new THREE.Vector2(
+    ((clientX - rect.left) / rect.width) * 2 - 1,
+    -((clientY - rect.top) / rect.height) * 2 + 1,
+  );
+
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(ndc, camera);
+  const sphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), sphereRadius);
+  const hit = new THREE.Vector3();
+  const intersects = raycaster.ray.intersectSphere(sphere, hit);
+  if (!intersects) return null;
+
+  const { theta, phi } = cartesianToSpherical(hit.x, hit.y, hit.z);
+  const angle = phi;
+  const depth = (theta / Math.PI) * MAX_DEPTH;
+
+  return {
+    position: { x: hit.x, y: hit.y, z: hit.z },
+    sphereCoord: { theta, phi },
+    radialCoord: { angle, depth },
+  };
+}
+
+function createNodeAtPosition(
+  coords: { position: { x: number; y: number; z: number }; sphereCoord: { theta: number; phi: number }; radialCoord: { angle: number; depth: number } },
+) {
+  const id = `user-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const node = migrateNodeData({
+    id,
+    label: 'New Node',
+    type: 'concept' as NodeType,
+    weight: 0.5,
+    description: '',
+    depth: 2,
+    isUserCreated: true,
+    position: coords.position,
+    sphereCoord: coords.sphereCoord,
+    radialCoord: coords.radialCoord,
+  });
+  return node;
+}
+
 export function ContextMenu() {
   const [menu, setMenu] = useState<MenuState>(INITIAL);
   const mode = useGraphStore((s) => s.mode);
   const nodes = useGraphStore((s) => s.nodes);
+  const addNode = useGraphStore((s) => s.addNode);
   const softDeleteNode = useGraphStore((s) => s.softDeleteNode);
   const restoreNode = useGraphStore((s) => s.restoreNode);
   const updateNode = useGraphStore((s) => s.updateNode);
   const selectedNodeId = useGraphStore((s) => s.selectedNodeId);
+  const setSelectedNodeId = useGraphStore((s) => s.setSelectedNodeId);
   const startEdgeCreation = useGraphStore((s) => s.startEdgeCreation);
   const pushAction = useHistoryStore((s) => s.pushAction);
 
-  // 우클릭 감지
+  // 우클릭 감지 — radial + sphere 모두
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (mode !== 'radial') return;
+      if (mode !== 'radial' && mode !== 'sphere') return;
       e.preventDefault();
 
-      // 선택된 노드가 있으면 노드 메뉴
       if (selectedNodeId) {
         setMenu({ visible: true, x: e.clientX, y: e.clientY, targetNodeId: selectedNodeId, targetEdgeId: null });
         return;
       }
 
-      // 빈 공간 메뉴
       setMenu({ visible: true, x: e.clientX, y: e.clientY, targetNodeId: null, targetEdgeId: null });
     };
     window.addEventListener('contextmenu', handler);
@@ -56,13 +137,13 @@ export function ContextMenu() {
 
   const close = useCallback(() => setMenu(INITIAL), []);
 
-  if (!menu.visible || mode !== 'radial') return null;
+  if (!menu.visible || (mode !== 'radial' && mode !== 'sphere')) return null;
 
   const targetNode = menu.targetNodeId ? nodes.get(menu.targetNodeId) : null;
 
-  // 뷰포트 안으로 clamping — 메뉴가 화면 밖으로 나가지 않게
+  // 뷰포트 안으로 clamping
   const menuWidth = 200;
-  const menuHeight = targetNode ? 320 : 60;
+  const menuHeight = targetNode ? 320 : 90;
   const clampedX = Math.min(menu.x, window.innerWidth - menuWidth - 12);
   const clampedY = Math.min(menu.y, window.innerHeight - menuHeight - 12);
 
@@ -91,6 +172,11 @@ export function ContextMenu() {
     gap: 8,
   };
 
+  const hoverHandlers = {
+    onMouseOver: (e: React.MouseEvent) => ((e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.05)'),
+    onMouseOut: (e: React.MouseEvent) => ((e.currentTarget as HTMLElement).style.background = 'transparent'),
+  };
+
   // --- 노드 메뉴 ---
   if (targetNode) {
     return (
@@ -99,8 +185,7 @@ export function ContextMenu() {
         {targetNode.isDeleted ? (
           <div
             style={itemStyle}
-            onMouseOver={(e) => ((e.target as HTMLElement).style.background = 'rgba(0,0,0,0.05)')}
-            onMouseOut={(e) => ((e.target as HTMLElement).style.background = 'transparent')}
+            {...hoverHandlers}
             onClick={() => {
               restoreNode(targetNode.id);
               pushAction({
@@ -117,8 +202,7 @@ export function ContextMenu() {
         ) : (
           <div
             style={itemStyle}
-            onMouseOver={(e) => ((e.target as HTMLElement).style.background = 'rgba(0,0,0,0.05)')}
-            onMouseOut={(e) => ((e.target as HTMLElement).style.background = 'transparent')}
+            {...hoverHandlers}
             onClick={() => {
               softDeleteNode(targetNode.id);
               pushAction({
@@ -142,8 +226,7 @@ export function ContextMenu() {
           <div
             key={t}
             style={{ ...itemStyle, fontWeight: targetNode.type === t ? 700 : 400 }}
-            onMouseOver={(e) => ((e.target as HTMLElement).style.background = 'rgba(0,0,0,0.05)')}
-            onMouseOut={(e) => ((e.target as HTMLElement).style.background = 'transparent')}
+            {...hoverHandlers}
             onClick={() => {
               if (targetNode.type === t) { close(); return; }
               pushAction({
@@ -167,8 +250,7 @@ export function ContextMenu() {
             <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', margin: '2px 0' }} />
             <div
               style={itemStyle}
-              onMouseOver={(e) => ((e.target as HTMLElement).style.background = 'rgba(0,0,0,0.05)')}
-              onMouseOut={(e) => ((e.target as HTMLElement).style.background = 'transparent')}
+              {...hoverHandlers}
               onClick={() => { startEdgeCreation(targetNode.id); close(); }}
             >
               엣지 연결 시작
@@ -180,14 +262,36 @@ export function ContextMenu() {
   }
 
   // --- 빈 공간 메뉴 ---
+  const handleAddNode = () => {
+    const coords = mode === 'radial'
+      ? screenToRadialPosition(menu.x, menu.y)
+      : screenToSpherePosition(menu.x, menu.y);
+
+    if (!coords) { close(); return; }
+
+    const node = createNodeAtPosition(coords);
+    addNode(node);
+    pushAction({
+      type: 'addNode',
+      targetId: node.id,
+      before: null,
+      after: node,
+    });
+    setSelectedNodeId(node.id);
+    close();
+  };
+
   return (
     <div style={menuStyle}>
+      <div style={itemStyle} {...hoverHandlers} onClick={handleAddNode}>
+        노드 추가
+      </div>
+      <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)', margin: '2px 0' }} />
       <div
         style={itemStyle}
-        onMouseOver={(e) => ((e.target as HTMLElement).style.background = 'rgba(0,0,0,0.05)')}
-        onMouseOut={(e) => ((e.target as HTMLElement).style.background = 'transparent')}
+        {...hoverHandlers}
         onClick={() => {
-          useGraphStore.getState().setSelectedNodeId(null);
+          setSelectedNodeId(null);
           close();
         }}
       >

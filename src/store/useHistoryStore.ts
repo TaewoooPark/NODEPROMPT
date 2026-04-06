@@ -5,7 +5,7 @@ import { useGraphStore } from './useGraphStore';
 const MAX_HISTORY = 50;
 
 interface HistoryEntry {
-  type: 'updateNode' | 'softDeleteNode' | 'restoreNode' | 'addEdge' | 'removeEdge';
+  type: 'addNode' | 'updateNode' | 'softDeleteNode' | 'restoreNode' | 'addEdge' | 'removeEdge';
   targetId: string;
   before: Partial<NodeData> | Partial<EdgeData> | null;
   after: Partial<NodeData> | Partial<EdgeData> | null;
@@ -25,6 +25,14 @@ function applyEntry(entry: HistoryEntry, data: Partial<NodeData> | Partial<EdgeD
   const graph = useGraphStore.getState();
 
   switch (entry.type) {
+    case 'addNode':
+      // undo = remove, redo = add
+      if (data === null) {
+        graph.removeNode(entry.targetId);
+      } else {
+        graph.addNode(data as NodeData);
+      }
+      break;
     case 'updateNode':
       graph.updateNode(entry.targetId, data as Partial<NodeData>);
       break;
