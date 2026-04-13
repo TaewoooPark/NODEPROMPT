@@ -10,6 +10,10 @@
   <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
 </p>
 
+<p align="center">
+  <img src="./public/screenshots/sphere.png" alt="NodePrompt Sphere 모드 — 피보나치 격자로 3D 구 표면에 분포된 50개 이상의 라벨 노드가 베지어 엣지로 연결된 개념 그래프. Mark Lombardi의 흑백 네트워크 미학을 따르며, 좌측의 자연어 프롬프트가 공간적으로 탐색 가능한 개념 그래프로 분해됩니다." width="100%">
+</p>
+
 [English README](./README.md)
 
 ---
@@ -76,6 +80,10 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 
 **Radial 모드** — 2D 편집 작업 공간. 계층 깊이별 동심원 링에 노드 배치 (최대 5개 링). 드래그, 가중치 조절, 엣지 생성이 가능합니다.
 
+<p align="center">
+  <img src="./public/screenshots/radial.png" alt="NodePrompt Radial 모드 — 중심 테마를 축으로 계층 깊이별 동심원 고리에 배치된 개념 노드들. Lombardi 미학의 베지어 엣지로 연결되어 있으며, 드래그로 위치 조정, 스크롤로 가중치 조절, Shift+클릭으로 노드 간 관계 생성이 가능한 공간 프롬프트 편집 레이아웃." width="100%">
+</p>
+
 **Interior 모드** — 구 내부에서의 몰입형 어안 뷰. 쌍곡 스케일링(Poincare 볼 모델)으로 가까운 노드는 크게, 먼 노드는 작게 표시됩니다.
 
 모드 전환은 `Space` 또는 더블클릭. 모든 전환은 노드 아이덴티티를 보존하는 부드러운 GSAP 모프입니다.
@@ -107,6 +115,10 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 - **라벨 더블클릭** — 패널에서 노드 이름 인라인 수정
 - **편집 패널** (우측) — 이름 수정, 설명 편집 + **Auto** AI 자동 생성 버튼, 가중치 슬라이더, 타입 선택기, 삭제/엣지 액션
 - **정보 패널** (좌측) — 이름 수정, 설명, 연결 노드 목록, 가중치 바, 클릭 내비게이션
+
+<p align="center">
+  <img src="./public/screenshots/radial-inspector.png" alt="NodePrompt Radial 모드의 편집 워크플로 — 좌측 정보 패널에 선택된 노드의 설명·계층·연결 노드 목록이 표시되고, 우측 편집 패널에는 이름 수정, 가중치 슬라이더, 노드 타입 선택기(Concept, Nuance, Mood, Philosophy, Abstraction, Context), 설명 자동 생성 버튼과 엣지 연결 액션이 배치되어 있습니다." width="100%">
+</p>
 
 ### 핸드 제스처 컨트롤
 

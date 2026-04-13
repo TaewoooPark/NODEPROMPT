@@ -10,6 +10,10 @@ NodePrompt decomposes natural language prompts into multi-dimensional concept gr
   <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
 </p>
 
+<p align="center">
+  <img src="./public/screenshots/sphere.png" alt="NodePrompt Sphere Mode — 50+ labeled concept nodes distributed on a 3D sphere via Fibonacci lattice, connected by Bezier edges in Mark Lombardi black-and-white network aesthetic. A natural language prompt on the left is decomposed into a navigable spatial concept graph." width="100%">
+</p>
+
 [한국어 README](./README_KR.md)
 
 ---
@@ -76,6 +80,10 @@ NodePrompt's design draws from established research in cognitive science, knowle
 
 **Radial Mode** — 2D editing workspace. Nodes arranged in concentric rings by hierarchy depth (max 5 rings). Drag to reposition, scroll to adjust weight, shift-click to create edges.
 
+<p align="center">
+  <img src="./public/screenshots/radial.png" alt="NodePrompt Radial Mode — concept nodes laid out in concentric hierarchical rings around a central theme, with Bezier edges rendered in Lombardi aesthetic. Layout supports drag-to-reposition, scroll-to-weight, and shift-click-to-connect for spatial prompt editing." width="100%">
+</p>
+
 **Interior Mode** — Immersive fisheye view from inside the sphere. Hyperbolic scaling (Poincare ball model) magnifies nearby nodes while compressing distant ones.
 
 All transitions are smooth GSAP morphs preserving node identity.
@@ -107,6 +115,10 @@ Each type is distinguished by a unique pattern texture (Lombardi-style: no color
 - **Double-click** a node label (in either panel) to **rename** it inline
 - **Edit panel** (right side) — label editing, description with **Auto** AI-generate button, weight slider, type selector, delete, edge actions
 - **Info panel** (left side) — label editing, description, connected nodes list, weight bar with click-to-navigate
+
+<p align="center">
+  <img src="./public/screenshots/radial-inspector.png" alt="NodePrompt editing workflow in Radial mode — left info panel shows the selected node's description, hierarchy, and connected nodes; right edit panel exposes label editing, weight slider, node-type selector (Concept, Nuance, Mood, Philosophy, Abstraction, Context), AI auto-generate button for descriptions, and edge creation actions." width="100%">
+</p>
 
 ### Hand Gesture Control
 
