@@ -2,6 +2,19 @@
 
 **인터랙티브 개념 그래프를 통한 공간적 프롬프트 엔지니어링**
 
+<p align="center">
+  <img src="https://img.shields.io/github/license/TaewoooPark/NODEPROMPT?style=flat-square&labelColor=000000&color=333333" alt="라이선스">
+  <img src="https://img.shields.io/github/stars/TaewoooPark/NODEPROMPT?style=flat-square&logo=github&logoColor=white&labelColor=000000&color=333333" alt="GitHub 스타 수">
+  <img src="https://img.shields.io/github/last-commit/TaewoooPark/NODEPROMPT?style=flat-square&labelColor=000000&color=333333" alt="최근 커밋">
+  <img src="https://img.shields.io/github/languages/top/TaewoooPark/NODEPROMPT?style=flat-square&labelColor=000000&color=333333" alt="주요 언어">
+  &nbsp;
+  <img src="https://img.shields.io/badge/TypeScript-000000?style=flat-square&logo=typescript&logoColor=white&labelColor=000000" alt="TypeScript">
+  <img src="https://img.shields.io/badge/React-000000?style=flat-square&logo=react&logoColor=white&labelColor=000000" alt="React">
+  <img src="https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=threedotjs&logoColor=white&labelColor=000000" alt="Three.js">
+  <img src="https://img.shields.io/badge/Vite-000000?style=flat-square&logo=vite&logoColor=white&labelColor=000000" alt="Vite">
+  <img src="https://img.shields.io/badge/Claude_API-000000?style=flat-square&logo=anthropic&logoColor=white&labelColor=000000" alt="Claude API">
+</p>
+
 프롬프트를 입력하면 AI가 다차원 개념 그래프로 분해하여 3D 구 표면에 배치하고, 사용자가 공간적으로 재구성한 뒤 구조화된 프롬프트로 재합성하여 더 높은 품질의 AI 응답을 생성합니다.
 
 > *"사고는 비선형이다. 언어는 선형이다. 구의 표면이 그 간극을 메운다."*
@@ -408,6 +421,18 @@ NodePrompt는 기존 도구 범주 사이의 공백을 채웁니다:
 ### AI & 프롬프트 엔지니어링
 - Cheng, X. et al. (2024). *TopicGPT: A prompt-based topic modeling framework*. NAACL.
 - Zhu, W. et al. (2024). *Chain-of-Symbol prompting for spatial reasoning in LLMs*. arXiv:2305.10276.
+
+---
+
+## 연결 / Connect
+
+<p align="center">
+  <a href="https://github.com/TaewoooPark"><img src="https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://x.com/theoverstrcture"><img src="https://img.shields.io/badge/-X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (트위터)"></a>
+  <a href="https://www.linkedin.com/in/taewoo-park-427a05352"><img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+  <a href="https://www.instagram.com/t.wo0_x/"><img src="https://img.shields.io/badge/-Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+  <a href="mailto:ptw151125@kaist.ac.kr"><img src="https://img.shields.io/badge/-Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="이메일"></a>
+</p>
 
 ---
 

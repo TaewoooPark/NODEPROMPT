@@ -2,6 +2,19 @@
 
 **Spatial Prompt Engineering through Interactive Concept Graphs**
 
+<p align="center">
+  <img src="https://img.shields.io/github/license/TaewoooPark/NODEPROMPT?style=flat-square&labelColor=000000&color=333333" alt="License">
+  <img src="https://img.shields.io/github/stars/TaewoooPark/NODEPROMPT?style=flat-square&logo=github&logoColor=white&labelColor=000000&color=333333" alt="GitHub stars">
+  <img src="https://img.shields.io/github/last-commit/TaewoooPark/NODEPROMPT?style=flat-square&labelColor=000000&color=333333" alt="Last commit">
+  <img src="https://img.shields.io/github/languages/top/TaewoooPark/NODEPROMPT?style=flat-square&labelColor=000000&color=333333" alt="Top language">
+  &nbsp;
+  <img src="https://img.shields.io/badge/TypeScript-000000?style=flat-square&logo=typescript&logoColor=white&labelColor=000000" alt="TypeScript">
+  <img src="https://img.shields.io/badge/React-000000?style=flat-square&logo=react&logoColor=white&labelColor=000000" alt="React">
+  <img src="https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=threedotjs&logoColor=white&labelColor=000000" alt="Three.js">
+  <img src="https://img.shields.io/badge/Vite-000000?style=flat-square&logo=vite&logoColor=white&labelColor=000000" alt="Vite">
+  <img src="https://img.shields.io/badge/Claude_API-000000?style=flat-square&logo=anthropic&logoColor=white&labelColor=000000" alt="Claude API">
+</p>
+
 NodePrompt decomposes natural language prompts into multi-dimensional concept graphs, renders them on a 3D sphere, and lets users spatially reorganize ideas before resynthesizing them into structured prompts for higher-quality AI responses.
 
 > *"Thinking is non-linear. Language is linear. The sphere bridges that gap."*
@@ -407,6 +420,18 @@ Add subordinate details (depth 3+) and cross-branch edges. Budget: remaining ~38
 ### AI & Prompt Engineering
 - Cheng, X. et al. (2024). *TopicGPT: A prompt-based topic modeling framework*. NAACL.
 - Zhu, W. et al. (2024). *Chain-of-Symbol prompting for spatial reasoning in LLMs*. arXiv:2305.10276.
+
+---
+
+## Connect
+
+<p align="center">
+  <a href="https://github.com/TaewoooPark"><img src="https://img.shields.io/badge/-GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+  <a href="https://x.com/theoverstrcture"><img src="https://img.shields.io/badge/-X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
+  <a href="https://www.linkedin.com/in/taewoo-park-427a05352"><img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+  <a href="https://www.instagram.com/t.wo0_x/"><img src="https://img.shields.io/badge/-Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+  <a href="mailto:ptw151125@kaist.ac.kr"><img src="https://img.shields.io/badge/-Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"></a>
+</p>
 
 ---
 
