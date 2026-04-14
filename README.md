@@ -25,6 +25,8 @@ NodePrompt decomposes natural language prompts into multi-dimensional concept gr
 
 > *"Thinking is non-linear. Language is linear. The sphere bridges that gap."*
 
+[한국어 README](./README_KR.md)
+
 <p align="center">
   <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
 </p>
@@ -33,7 +35,6 @@ NodePrompt decomposes natural language prompts into multi-dimensional concept gr
   <img src="./public/screenshots/sphere.png" alt="NodePrompt Sphere Mode — 50+ labeled concept nodes distributed on a 3D sphere via Fibonacci lattice, connected by Bezier edges in Mark Lombardi black-and-white network aesthetic. A natural language prompt on the left is decomposed into a navigable spatial concept graph." width="100%">
 </p>
 
-[한국어 README](./README_KR.md)
 
 ---
 
