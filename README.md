@@ -12,7 +12,13 @@
   <img src="https://img.shields.io/badge/React-000000?style=flat-square&logo=react&logoColor=white&labelColor=000000" alt="React">
   <img src="https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=threedotjs&logoColor=white&labelColor=000000" alt="Three.js">
   <img src="https://img.shields.io/badge/Vite-000000?style=flat-square&logo=vite&logoColor=white&labelColor=000000" alt="Vite">
-  <img src="https://img.shields.io/badge/Claude_API-000000?style=flat-square&logo=anthropic&logoColor=white&labelColor=000000" alt="Claude API">
+  &nbsp;
+  <img src="https://img.shields.io/badge/Claude-000000?style=flat-square&logo=anthropic&logoColor=white&labelColor=000000" alt="Anthropic Claude">
+  <img src="https://img.shields.io/badge/GPT-000000?style=flat-square&logo=openai&logoColor=white&labelColor=000000" alt="OpenAI GPT">
+  <img src="https://img.shields.io/badge/Gemini-000000?style=flat-square&logo=googlegemini&logoColor=white&labelColor=000000" alt="Google Gemini">
+  <img src="https://img.shields.io/badge/Grok-000000?style=flat-square&logo=x&logoColor=white&labelColor=000000" alt="xAI Grok">
+  <img src="https://img.shields.io/badge/DeepSeek-000000?style=flat-square&labelColor=000000&color=000000" alt="DeepSeek">
+  <img src="https://img.shields.io/badge/Qwen-000000?style=flat-square&labelColor=000000&color=000000" alt="Alibaba Qwen">
 </p>
 
 NodePrompt decomposes natural language prompts into multi-dimensional concept graphs, renders them on a 3D sphere, and lets users spatially reorganize ideas before resynthesizing them into structured prompts for higher-quality AI responses.
@@ -181,7 +187,9 @@ The system runs at ~15 fps inference with 1-Euro filters for smooth, jitter-free
 ### Prerequisites
 
 - Node.js 18+
-- A Claude API key ([Anthropic Console](https://console.anthropic.com/))
+- An API key for at least one of the six supported providers:
+  - [Anthropic Claude](https://console.anthropic.com/) · [OpenAI GPT](https://platform.openai.com/) · [Google Gemini](https://aistudio.google.com/)
+  - [xAI Grok](https://console.x.ai/) · [DeepSeek](https://platform.deepseek.com/) · [Alibaba Qwen (DashScope)](https://dashscope.console.aliyun.com/)
 
 ### Installation
 
@@ -192,24 +200,40 @@ npm install
 npm run dev
 ```
 
-### API Key Setup
+### Provider & API Key Setup
 
-**Option A — Browser (recommended for sharing)**
-1. Open the local URL shown in your terminal after `npm run dev`
-2. Click the **API** button in the top toolbar
-3. Paste your Claude API key (displayed as `****`, stored in `localStorage` only)
-4. The indicator turns to `API` when connected
+NodePrompt speaks to **six LLM providers** through a unified interface. Pick whichever you have a key for — structured extraction, streaming, and descriptions all work identically across providers.
 
-**Option B — Environment variable**
+| Provider | Fast (extraction) | Flagship (generation) |
+|---|---|---|
+| **Anthropic** | Claude Haiku 4.5 | Claude Sonnet 4.6 |
+| **OpenAI** | GPT-5.4 Mini | GPT-5.4 |
+| **Google** | Gemini 2.5 Flash | Gemini 3.1 Pro |
+| **xAI** | Grok 4.1 Fast | Grok 4.1 Fast Reasoning |
+| **DeepSeek** | DeepSeek V3.2 Chat | DeepSeek Reasoner |
+| **Alibaba** | Qwen3.5 Flash | Qwen3 Max |
+
+**Option A — Browser (recommended)**
+1. Run `npm run dev` and open the local URL
+2. Click the provider dropdown in the top toolbar (it shows a monotone logo + the active provider's short name)
+3. Pick a provider — a small bilingual (EN/KO) note pops up next to the dropdown if the flagship model requires extra activation on that provider's dashboard (OpenAI Verified Org, Gemini billing, Qwen per-model activation)
+4. Click **API** to enter the key for the picked provider (displayed as `****`, stored in `localStorage` only). Each provider has its own slot, so you can keep several keys at once.
+
+**Option B — Environment variables**
 ```bash
 cp .env.example .env
-# Edit .env and add your API key:
+# Fill in any providers you use (others can be left blank):
 # VITE_ANTHROPIC_API_KEY=sk-ant-...
+# VITE_OPENAI_API_KEY=sk-...
+# VITE_GEMINI_API_KEY=AIza...
+# VITE_XAI_API_KEY=xai-...
+# VITE_DEEPSEEK_API_KEY=sk-...
+# VITE_QWEN_API_KEY=sk-...
 ```
 
-Browser-entered key takes priority over `.env`. The key persists across resets and page reloads.
+Browser-entered keys take priority over `.env`. Legacy single-key installs (`nodeprompt_api_key`) are auto-migrated into the Anthropic slot on first load.
 
-> **Note:** API calls are routed through Vite's dev proxy. This setup is intended for local development (`npm run dev`). For production deployment, a separate backend proxy is required.
+> **Note:** All six providers are reached through Vite's dev proxy to bypass CORS. This setup is intended for local development (`npm run dev`). For production deployment, a separate backend proxy is required.
 
 ### Quick Start
 
@@ -262,7 +286,7 @@ Browser-entered key takes priority over `.env`. The key persists across resets a
 | Animation | GSAP (single-tween morph for 100+ nodes) |
 | State | Zustand (Map + Array dual structure) |
 | Layout | D3-hierarchy (radial rings), Fibonacci lattice (sphere) |
-| API | Claude API via Vite proxy |
+| LLM API | Anthropic / OpenAI / Gemini / xAI / DeepSeek / Qwen via unified provider layer + Vite proxy |
 | Gesture | MediaPipe Hand + 1-Euro filter |
 | Validation | Zod schema validation with retry |
 | Style | Lombardi aesthetic (DM Sans, IBM Plex Sans) |
@@ -330,9 +354,18 @@ src/
 │   ├── useNodeSpawnAnimation Elastic stagger on node creation
 │   └── useKeyboardShortcuts  Global keyboard handlers
 ├── services/
-│   ├── claude.ts             3-phase extraction + streaming + API key management
+│   ├── claude.ts             3-phase extraction + streaming orchestration (provider-agnostic)
 │   ├── synthesizer.ts        Graph → structured prompt composition
-│   └── mapNodesToSphere.ts   Fibonacci lattice + Tammes repulsion
+│   ├── mapNodesToSphere.ts   Fibonacci lattice + Tammes repulsion
+│   └── llm/                  Unified multi-provider LLM layer
+│       ├── types.ts              LLMProvider interface (structured / simple / stream)
+│       ├── catalog.ts            Per-provider metadata + default fast/flagship models
+│       ├── registry.ts           Key storage, legacy migration, provider factory + cache
+│       ├── logos.tsx             Monotone inline SVG logos (currentColor)
+│       └── providers/
+│           ├── anthropic.ts          Messages API + tool_choice structured output
+│           ├── openaiCompat.ts       OpenAI / Grok / DeepSeek / Qwen (json_schema)
+│           └── gemini.ts             Gemini REST (responseSchema, nullable)
 ├── store/
 │   ├── useGraphStore.ts      Nodes/edges/mode/CRUD/edge-creation state
 │   └── useHistoryStore.ts    Undo/Redo action stack

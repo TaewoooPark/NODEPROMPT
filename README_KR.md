@@ -12,7 +12,13 @@
   <img src="https://img.shields.io/badge/React-000000?style=flat-square&logo=react&logoColor=white&labelColor=000000" alt="React">
   <img src="https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=threedotjs&logoColor=white&labelColor=000000" alt="Three.js">
   <img src="https://img.shields.io/badge/Vite-000000?style=flat-square&logo=vite&logoColor=white&labelColor=000000" alt="Vite">
-  <img src="https://img.shields.io/badge/Claude_API-000000?style=flat-square&logo=anthropic&logoColor=white&labelColor=000000" alt="Claude API">
+  &nbsp;
+  <img src="https://img.shields.io/badge/Claude-000000?style=flat-square&logo=anthropic&logoColor=white&labelColor=000000" alt="Anthropic Claude">
+  <img src="https://img.shields.io/badge/GPT-000000?style=flat-square&logo=openai&logoColor=white&labelColor=000000" alt="OpenAI GPT">
+  <img src="https://img.shields.io/badge/Gemini-000000?style=flat-square&logo=googlegemini&logoColor=white&labelColor=000000" alt="Google Gemini">
+  <img src="https://img.shields.io/badge/Grok-000000?style=flat-square&logo=x&logoColor=white&labelColor=000000" alt="xAI Grok">
+  <img src="https://img.shields.io/badge/DeepSeek-000000?style=flat-square&labelColor=000000&color=000000" alt="DeepSeek">
+  <img src="https://img.shields.io/badge/Qwen-000000?style=flat-square&labelColor=000000&color=000000" alt="Alibaba Qwen">
 </p>
 
 프롬프트를 입력하면 AI가 다차원 개념 그래프로 분해하여 3D 구 표면에 배치하고, 사용자가 공간적으로 재구성한 뒤 구조화된 프롬프트로 재합성하여 더 높은 품질의 AI 응답을 생성합니다.
@@ -181,7 +187,9 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 ### 사전 요구사항
 
 - Node.js 18+
-- Claude API 키 ([Anthropic Console](https://console.anthropic.com/))
+- 지원되는 6개 프로바이더 중 최소 하나의 API 키:
+  - [Anthropic Claude](https://console.anthropic.com/) · [OpenAI GPT](https://platform.openai.com/) · [Google Gemini](https://aistudio.google.com/)
+  - [xAI Grok](https://console.x.ai/) · [DeepSeek](https://platform.deepseek.com/) · [Alibaba Qwen (DashScope)](https://dashscope.console.aliyun.com/)
 
 ### 설치
 
@@ -192,24 +200,40 @@ npm install
 npm run dev
 ```
 
-### API 키 설정
+### 프로바이더 & API 키 설정
 
-**방법 A — 브라우저 (배포 시 권장)**
-1. `npm run dev` 실행 후 터미널에 표시되는 로컬 URL 접속
-2. 상단 툴바의 **API** 버튼 클릭
-3. Claude API 키 붙여넣기 (`****`로 마스킹 표시, `localStorage`에만 저장)
-4. 연결 성공 시 표시가 `API`로 변경
+NodePrompt는 통합 프로바이더 레이어를 통해 **6개의 LLM 프로바이더**와 통신합니다. 보유한 키의 프로바이더를 고르면 구조화 추출, 스트리밍, 설명 생성이 모두 동일하게 동작합니다.
+
+| 프로바이더 | Fast (추출) | Flagship (생성) |
+|---|---|---|
+| **Anthropic** | Claude Haiku 4.5 | Claude Sonnet 4.6 |
+| **OpenAI** | GPT-5.4 Mini | GPT-5.4 |
+| **Google** | Gemini 2.5 Flash | Gemini 3.1 Pro |
+| **xAI** | Grok 4.1 Fast | Grok 4.1 Fast Reasoning |
+| **DeepSeek** | DeepSeek V3.2 Chat | DeepSeek Reasoner |
+| **Alibaba** | Qwen3.5 Flash | Qwen3 Max |
+
+**방법 A — 브라우저 (권장)**
+1. `npm run dev` 실행 후 로컬 URL 접속
+2. 상단 툴바의 프로바이더 드롭다운 클릭 (모노톤 로고 + 활성 프로바이더 이름 표시)
+3. 프로바이더 선택 — 해당 프로바이더의 플래그십 모델이 콘솔에서 추가 활성화를 요구하는 경우(OpenAI Verified Organization, Gemini 결제 활성화, Qwen 모델별 신청), 드롭다운 옆에 한영 이중 언어 안내 팝업이 나타납니다
+4. **API** 버튼을 눌러 선택한 프로바이더용 키 입력 (`****`로 마스킹, `localStorage`에만 저장). 프로바이더별로 슬롯이 분리되어 여러 키를 동시에 보관할 수 있습니다.
 
 **방법 B — 환경 변수**
 ```bash
 cp .env.example .env
-# .env 파일을 열어 API 키를 입력하세요:
+# 사용할 프로바이더만 입력하면 됩니다(나머지는 비워도 무방):
 # VITE_ANTHROPIC_API_KEY=sk-ant-...
+# VITE_OPENAI_API_KEY=sk-...
+# VITE_GEMINI_API_KEY=AIza...
+# VITE_XAI_API_KEY=xai-...
+# VITE_DEEPSEEK_API_KEY=sk-...
+# VITE_QWEN_API_KEY=sk-...
 ```
 
-브라우저 입력 키가 `.env`보다 우선합니다. 키는 Reset이나 페이지 새로고침 후에도 유지됩니다.
+브라우저 입력 키가 `.env`보다 우선합니다. 기존 단일 키(`nodeprompt_api_key`)는 첫 실행 시 Anthropic 슬롯으로 자동 마이그레이션됩니다.
 
-> **참고:** API 호출은 Vite 개발 서버 프록시를 통해 라우팅됩니다. 이 설정은 로컬 개발(`npm run dev`) 전용입니다. 프로덕션 배포 시에는 별도의 백엔드 프록시가 필요합니다.
+> **참고:** 6개 프로바이더 모두 CORS 우회를 위해 Vite 개발 서버 프록시를 경유합니다. 이 설정은 로컬 개발(`npm run dev`) 전용이며, 프로덕션 배포 시에는 별도 백엔드 프록시가 필요합니다.
 
 ### 빠른 시작
 
@@ -263,7 +287,7 @@ cp .env.example .env
 | 애니메이션 | GSAP (100+ 노드 단일 트윈 모프) |
 | 상태 관리 | Zustand (Map + Array 이중 구조) |
 | 레이아웃 | D3-hierarchy (방사형 링), Fibonacci 격자 (구면) |
-| API | Claude API (Vite 프록시 경유) |
+| LLM API | Anthropic / OpenAI / Gemini / xAI / DeepSeek / Qwen 통합 프로바이더 레이어 (Vite 프록시 경유) |
 | 제스처 | MediaPipe Hand + 1-Euro 필터 |
 | 검증 | Zod 스키마 검증 + 재시도 |
 | 스타일 | Lombardi 미학 (DM Sans, IBM Plex Sans) |
@@ -331,9 +355,18 @@ src/
 │   ├── useNodeSpawnAnimation 노드 생성 elastic 스태거
 │   └── useKeyboardShortcuts  글로벌 키보드 핸들러
 ├── services/
-│   ├── claude.ts             3단계 추출 + 스트리밍 + API 키 관리
+│   ├── claude.ts             3단계 추출 + 스트리밍 오케스트레이션 (프로바이더 중립)
 │   ├── synthesizer.ts        그래프 → 구조화 프롬프트 합성
-│   └── mapNodesToSphere.ts   Fibonacci 격자 + Tammes 반발력
+│   ├── mapNodesToSphere.ts   Fibonacci 격자 + Tammes 반발력
+│   └── llm/                  통합 멀티 프로바이더 LLM 레이어
+│       ├── types.ts              LLMProvider 인터페이스 (structured / simple / stream)
+│       ├── catalog.ts            프로바이더별 메타데이터 + 기본 fast/flagship 모델
+│       ├── registry.ts           키 저장, 레거시 마이그레이션, 프로바이더 팩토리 + 캐시
+│       ├── logos.tsx             모노톤 인라인 SVG 로고 (currentColor)
+│       └── providers/
+│           ├── anthropic.ts          Messages API + tool_choice 구조화 출력
+│           ├── openaiCompat.ts       OpenAI / Grok / DeepSeek / Qwen (json_schema)
+│           └── gemini.ts             Gemini REST (responseSchema, nullable)
 ├── store/
 │   ├── useGraphStore.ts      노드/엣지/모드/CRUD/엣지 생성 상태
 │   └── useHistoryStore.ts    Undo/Redo 액션 스택
