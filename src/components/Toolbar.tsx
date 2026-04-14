@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react';
 import { useGraphStore } from '../store/useGraphStore';
-import { checkClaudeConnection, setApiKey, getSavedApiKey } from '../services/claude';
+import { checkClaudeConnection } from '../services/claude';
+import {
+  getActiveProviderId, setActiveProviderId,
+  setProviderKey, hasProviderKey,
+} from '../services/llm/registry';
+import { PROVIDER_CATALOG, PROVIDER_ORDER } from '../services/llm/catalog';
+import { ProviderLogo } from '../services/llm/logos';
+import type { ProviderId } from '../services/llm/types';
 import { loadDemoData } from '../utils/demoData';
 import { useT, useLanguageStore } from '../i18n/useLanguage';
 
@@ -62,23 +69,40 @@ export function Toolbar() {
   const sphereRadius = useGraphStore((s) => s.sphereRadius);
   const [claudeOk, setClaudeOk] = useState<boolean | null>(null);
   const [showKeyInput, setShowKeyInput] = useState(false);
+  const [showProviderMenu, setShowProviderMenu] = useState(false);
+  const [showProviderNote, setShowProviderNote] = useState(false);
+  const [activeProvider, setActiveProvider] = useState<ProviderId>(() => getActiveProviderId());
   const [keyDraft, setKeyDraft] = useState('');
+  const [keyVersion, setKeyVersion] = useState(0); // key 저장 후 hasKey 재계산 트리거
   const keyInputRef = useRef<HTMLInputElement>(null);
   const t = useT();
   const lang = useLanguageStore((s) => s.lang);
 
-  // API 키 존재 여부 (마스킹 표시용)
-  const hasKey = Boolean(getSavedApiKey());
+  const activeMeta = PROVIDER_CATALOG[activeProvider];
+  // 현재 활성 프로바이더에 키가 저장되어 있는지
+  void keyVersion;
+  const hasKey = hasProviderKey(activeProvider);
 
   const handleKeySubmit = useCallback(() => {
     const trimmed = keyDraft.trim();
     if (trimmed) {
-      setApiKey(trimmed);
+      setProviderKey(activeProvider, trimmed);
       setKeyDraft('');
       setShowKeyInput(false);
+      setKeyVersion((v) => v + 1);
       checkClaudeConnection().then(setClaudeOk);
     }
-  }, [keyDraft]);
+  }, [keyDraft, activeProvider]);
+
+  const handleProviderPick = useCallback((id: ProviderId) => {
+    setActiveProviderId(id);
+    setActiveProvider(id);
+    setShowProviderMenu(false);
+    setClaudeOk(null);
+    // 선택한 프로바이더가 note를 가지면 안내 팝업 표시, 없으면 숨김
+    setShowProviderNote(Boolean(PROVIDER_CATALOG[id].note));
+    checkClaudeConnection().then(setClaudeOk);
+  }, []);
 
   const handleDemo = useCallback(() => {
     const { nodes, edges } = loadDemoData(sphereRadius, lang);
@@ -168,20 +192,148 @@ export function Toolbar() {
 
       <div style={divider} />
 
-      {/* Claude API 상태 + 키 입력 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, position: 'relative' }}>
+      {/* Provider 선택 + API 상태 + 키 입력 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
         <div
           style={{
             width: 5,
             height: 5,
             borderRadius: '50%',
             background: claudeOk === null ? '#999' : claudeOk ? '#000' : '#c00',
+            flexShrink: 0,
           }}
         />
+
+        {/* 프로바이더 드롭다운 (로고 + 이름) */}
+        <button
+          style={{
+            ...smallBtn,
+            border: '1px solid rgba(0,0,0,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 5,
+            padding: '2px 7px',
+            color: '#1a1a1a',
+          }}
+          onClick={() => { setShowProviderMenu((v) => !v); setShowKeyInput(false); setShowProviderNote(false); }}
+          title="Select LLM provider"
+        >
+          <ProviderLogo provider={activeProvider} size={11} />
+          <span style={{ fontWeight: 400 }}>{activeMeta.short}</span>
+          <span style={{ color: '#999', fontSize: 8 }}>▾</span>
+        </button>
+
+        {/* 모델별 추가 인증/활성화가 필요한 프로바이더 안내 팝업 */}
+        {showProviderNote && activeMeta.note && !showProviderMenu && (
+          <div
+            onClick={() => setShowProviderNote(false)}
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              marginTop: 8,
+              background: 'rgba(255,255,255,0.96)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(0,0,0,0.12)',
+              borderRadius: 8,
+              padding: '8px 10px',
+              zIndex: 199,
+              width: 240,
+              fontFamily: 'inherit',
+              fontSize: 10,
+              lineHeight: 1.45,
+              color: '#333',
+              fontWeight: 300,
+              cursor: 'pointer',
+              display: 'flex',
+              gap: 6,
+              alignItems: 'flex-start',
+            }}
+            title="Click to dismiss"
+          >
+            <div style={{
+              flexShrink: 0,
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              border: '1px solid #000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 8,
+              fontWeight: 400,
+              marginTop: 1,
+            }}>
+              !
+            </div>
+            <div style={{ flex: 1 }}>
+              {lang === 'ko' ? activeMeta.note.ko : activeMeta.note.en}
+            </div>
+          </div>
+        )}
+
+        {showProviderMenu && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            marginTop: 8,
+            background: 'rgba(255,255,255,0.96)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(0,0,0,0.12)',
+            borderRadius: 8,
+            padding: '4px 0',
+            zIndex: 200,
+            width: 180,
+            fontFamily: 'inherit',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            {PROVIDER_ORDER.map((pid) => {
+              const meta = PROVIDER_CATALOG[pid];
+              const selected = pid === activeProvider;
+              const hasPkey = hasProviderKey(pid);
+              return (
+                <button
+                  key={pid}
+                  onClick={() => handleProviderPick(pid)}
+                  style={{
+                    background: selected ? 'rgba(0,0,0,0.06)' : 'transparent',
+                    border: 'none',
+                    textAlign: 'left',
+                    padding: '6px 10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 11,
+                    color: '#1a1a1a',
+                    fontFamily: 'inherit',
+                    fontWeight: selected ? 400 : 300,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <ProviderLogo provider={pid} size={12} />
+                  <span style={{ flex: 1 }}>{meta.short}</span>
+                  <span style={{
+                    fontSize: 8,
+                    color: hasPkey ? '#000' : '#bbb',
+                    fontWeight: 300,
+                  }}>
+                    {hasPkey ? '●' : '○'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 키 입력 토글 */}
         <button
           style={{ ...smallBtn, border: 'none', padding: '1px 4px', color: '#666' }}
           onClick={() => {
             setShowKeyInput((v) => !v);
+            setShowProviderMenu(false);
+            setShowProviderNote(false);
             setTimeout(() => keyInputRef.current?.focus(), 50);
           }}
           title={t('toolbar.apiKeySettings')}
@@ -205,14 +357,23 @@ export function Toolbar() {
             width: 280,
             fontFamily: 'inherit',
           }}>
-            <div style={{ fontSize: 11, fontWeight: 400, color: '#333', marginBottom: 6 }}>
-              Claude API Key
+            <div style={{
+              fontSize: 11,
+              fontWeight: 400,
+              color: '#333',
+              marginBottom: 6,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}>
+              <ProviderLogo provider={activeProvider} size={11} />
+              {activeMeta.label} API Key
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <input
                 ref={keyInputRef}
                 type="password"
-                placeholder={hasKey ? '••••••••••' : 'sk-ant-...'}
+                placeholder={hasKey ? '••••••••••' : activeMeta.keyHint}
                 value={keyDraft}
                 onChange={(e) => setKeyDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleKeySubmit(); if (e.key === 'Escape') setShowKeyInput(false); }}
