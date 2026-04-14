@@ -107,20 +107,20 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 
 모드 전환은 `Space` 또는 더블클릭. 모든 전환은 노드 아이덴티티를 보존하는 부드러운 GSAP 모프입니다.
 
-### 6가지 인지 차원
+### 여섯 초월자(Transcendentia) 차원
 
-모든 프롬프트는 의미의 서로 다른 측면을 나타내는 6가지 차원으로 분해됩니다:
+NodePrompt의 여섯 노드 타입은 토마스 아퀴나스가 *De Veritate* q.1 a.1에서 제시한 여섯 초월자(*transcendentia*)입니다. 범주를 초월하여 존재자(*ens*) 자체에 적용되는 여섯 가지 형이상학적 물음이며, 모든 프롬프트는 같은 텍스트에 대해 서로 다른 여섯 개의 질문을 던지는 방식으로 읽힙니다:
 
-| 타입 | 포착하는 것 | 예시 |
-|---|---|---|
-| **Concept** | 핵심 주제, 키워드, 대상 | "기계학습", "신경망" |
-| **Nuance** | 함축된 의미, 행간, 말하지 않은 것 | "확장성에 대한 암묵적 가정" |
-| **Mood** | 감정적 톤, 분위기 | "조심스러운 낙관", "긴급함" |
-| **Philosophy** | 기저 세계관, 가치, 신념 | "기술 결정론" |
-| **Abstraction** | 메타포, 상위 패턴 | "피드백 루프", "창발" |
-| **Context** | 상황, 청중, 제약 조건 | "학술 논문", "비전문가 대상" |
+| 라틴어 — UI | 뜻 | 묻는 질문 | 1차 대응 |
+|---|---|---|---|
+| **ens** — 존재 | *id quod est* — 있는 그것 | 이 프롬프트는 무엇을 '있다'고 정립하는가? | 핵심 주체, 주제, 지시 대상 |
+| **res** — 본질 | *quod habet quidditatem* — 무엇임을 가진 것 | 그것은 형식적 구조로서 무엇인가? | 정의, 메커니즘, 상위 패턴 |
+| **unum** — 통일 | *ens indivisum* — 자기 안에서 분할되지 않음 | 무엇이 그것을 하나로 붙들고 있는가? | 상황, 청중, 통일적 맥락, 프레임 |
+| **aliquid** — 차이 | *aliud-quid* — 다른 것과 다른 것 | 그것은 그것이 아닌 것과 어떻게 구별되는가? | 행간, 대조, 암묵적 긴장, 뉘앙스 |
+| **verum** — 진리 | *ens ut cognoscibile* — 지성에 대해 인식될 수 있는 존재 | 그것은 인식자에게 어떻게 참인가? | 세계관, 인식·윤리적 입장, 철학 |
+| **bonum** — 가치 | *ens ut appetibile* — 의지에 대해 욕구될 수 있는 존재 | 그것은 의지에 어떻게 욕구되는가? | 톤, 분위기, 정서적 하중, 가치 |
 
-각 타입은 고유한 패턴 텍스처로 구별됩니다 (Lombardi 스타일: 무색, 패턴 기반 구분).
+여섯 초월자는 여섯 '종류'의 존재가 아니라 같은 존재의 여섯 '측면'입니다 — "convertibilia cum ente" (존재 자체와 서로 바꿀 수 있는 것). 하나의 개념은 어떤 레지스터로도 읽힐 수 있으며, 선택된 레지스터는 렌즈이지 내용이 아닙니다. 각 타입은 고유한 패턴 텍스처로 구별되며 (Lombardi 스타일: 무색, 패턴만으로 구분), 도움말 오버레이(`?` 버튼)에 전체 매핑과 예시 질문이 포함되어 있습니다.
 
 ### 인터랙티브 그래프 편집
 
@@ -136,7 +136,7 @@ NodePrompt의 설계는 인지과학, 지식 표현, 정보 시각화 분야의 
 - **정보 패널** (좌측) — 이름 수정, 설명, 연결 노드 목록, 가중치 바, 클릭 내비게이션
 
 <p align="center">
-  <img src="./public/screenshots/radial-inspector.png" alt="NodePrompt Radial 모드의 편집 워크플로 — 좌측 정보 패널에 선택된 노드의 설명·계층·연결 노드 목록이 표시되고, 우측 편집 패널에는 이름 수정, 가중치 슬라이더, 노드 타입 선택기(Concept, Nuance, Mood, Philosophy, Abstraction, Context), 설명 자동 생성 버튼과 엣지 연결 액션이 배치되어 있습니다." width="100%">
+  <img src="./public/screenshots/radial-inspector.png" alt="NodePrompt Radial 모드의 편집 워크플로 — 좌측 정보 패널에 선택된 노드의 설명·계층·연결 노드 목록이 표시되고, 우측 편집 패널에는 이름 수정, 가중치 슬라이더, 노드 타입 선택기(ens, res, unum, aliquid, verum, bonum — 아퀴나스의 여섯 초월자), 설명 자동 생성 버튼과 엣지 연결 액션이 배치되어 있습니다." width="100%">
 </p>
 
 ### 핸드 제스처 컨트롤
@@ -306,7 +306,7 @@ cp .env.example .env
 interface NodeData {
   id: string;
   label: string;
-  type: 'concept' | 'nuance' | 'mood' | 'philosophy' | 'abstraction' | 'context';
+  type: 'ens' | 'res' | 'unum' | 'aliquid' | 'verum' | 'bonum';  // 아퀴나스, De Veritate q.1 a.1
   weight: number;              // 0–1 중요도 점수
   description: string;
   depth: number;               // 0=루트, 1=테마, 2=기본, 3+=세부

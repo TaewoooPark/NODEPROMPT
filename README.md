@@ -107,20 +107,20 @@ NodePrompt's design draws from established research in cognitive science, knowle
 
 All transitions are smooth GSAP morphs preserving node identity.
 
-### Six Conceptual Dimensions
+### Six Transcendental Dimensions
 
-Every prompt is decomposed across six dimensions, each representing a different facet of meaning:
+NodePrompt's six node types are Aquinas's six *transcendentia* from *De Veritate* q.1 a.1 — the metaphysical modes by which any being (*ens*) can be considered. Every prompt is read through these six registers, each asking a different question of the same text:
 
-| Type | What it captures | Example |
-|---|---|---|
-| **Concept** | Core topics, keywords, subjects | "Machine Learning", "Neural Networks" |
-| **Nuance** | Implied meanings, subtext, what's unsaid | "Unstated assumption of scalability" |
-| **Mood** | Emotional tone, atmosphere | "Cautious optimism", "Urgency" |
-| **Philosophy** | Underlying worldview, values, beliefs | "Technological determinism" |
-| **Abstraction** | Metaphors, higher-order patterns | "Feedback loop", "Emergence" |
-| **Context** | Situation, audience, constraints | "Academic paper", "Non-expert audience" |
+| Latin — UI | Meaning | The question it asks | First-draft mapping |
+|---|---|---|---|
+| **ens** — Being | *id quod est* — what is posited as being | What does this prompt posit as existing? | Core subjects, topics, referents |
+| **res** — Essence | *quod habet quidditatem* — what has a whatness | What is it, as a formal structure? | Definitions, mechanisms, higher-order patterns |
+| **unum** — Unity | *ens indivisum* — being as undivided in itself | What holds it together as one? | Situation, audience, unifying frame, context |
+| **aliquid** — Difference | *aliud-quid* — other-than-other | What distinguishes it from what it is not? | Subtext, contrast, implied tensions, nuance |
+| **verum** — Truth | *ens ut cognoscibile* — being as knowable to intellect | How is it true to a knower? | Worldviews, ethical/epistemic commitments, philosophy |
+| **bonum** — Value | *ens ut appetibile* — being as desirable to will | How is it desirable to a will? | Tone, mood, affective charge, values |
 
-Each type is distinguished by a unique pattern texture (Lombardi-style: no colors, pattern-only differentiation).
+The six are not six *kinds* of being but six *aspects* of the same being — "convertibilia cum ente" (convertible with being itself). A single concept can be read through any register; the register chosen is the lens, not the content. Each type is distinguished by a unique pattern texture (Lombardi-style: no colors, pattern-only differentiation), and the Help overlay (`?` button) contains the full mapping with example questions.
 
 ### Interactive Graph Editing
 
@@ -136,7 +136,7 @@ Each type is distinguished by a unique pattern texture (Lombardi-style: no color
 - **Info panel** (left side) — label editing, description, connected nodes list, weight bar with click-to-navigate
 
 <p align="center">
-  <img src="./public/screenshots/radial-inspector.png" alt="NodePrompt editing workflow in Radial mode — left info panel shows the selected node's description, hierarchy, and connected nodes; right edit panel exposes label editing, weight slider, node-type selector (Concept, Nuance, Mood, Philosophy, Abstraction, Context), AI auto-generate button for descriptions, and edge creation actions." width="100%">
+  <img src="./public/screenshots/radial-inspector.png" alt="NodePrompt editing workflow in Radial mode — left info panel shows the selected node's description, hierarchy, and connected nodes; right edit panel exposes label editing, weight slider, node-type selector (ens, res, unum, aliquid, verum, bonum — Aquinas's six transcendentals), AI auto-generate button for descriptions, and edge creation actions." width="100%">
 </p>
 
 ### Hand Gesture Control
@@ -305,7 +305,7 @@ Browser-entered keys take priority over `.env`. Legacy single-key installs (`nod
 interface NodeData {
   id: string;
   label: string;
-  type: 'concept' | 'nuance' | 'mood' | 'philosophy' | 'abstraction' | 'context';
+  type: 'ens' | 'res' | 'unum' | 'aliquid' | 'verum' | 'bonum';  // Aquinas, De Veritate q.1 a.1
   weight: number;              // 0–1 importance score
   description: string;
   depth: number;               // 0=root, 1=theme, 2=basic, 3+=detail

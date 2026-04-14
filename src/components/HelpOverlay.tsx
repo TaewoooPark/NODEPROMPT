@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect, type CSSProperties } from 'react';
 import { useLanguageStore } from '../i18n/useLanguage';
-import { useT } from '../i18n/useLanguage';
+import { useT, useTypeLabels } from '../i18n/useLanguage';
+import { PATTERN_CSS } from '../utils/nodePatterns';
+import type { NodeType } from '../types';
 
 const btnStyle: CSSProperties = {
   position: 'fixed',
@@ -63,8 +65,10 @@ const cardStyle: CSSProperties = {
   border: '1px solid rgba(0,0,0,0.1)',
   borderRadius: 12,
   padding: '24px 32px',
-  maxWidth: 720,
-  width: '90vw',
+  maxWidth: 860,
+  width: '92vw',
+  maxHeight: '90vh',
+  overflowY: 'auto',
   fontFamily: '"DM Sans", "IBM Plex Sans", sans-serif',
   color: '#1a1a1a',
 };
@@ -108,9 +112,19 @@ function Row({ label, shortcut }: { label: string; shortcut: string }) {
   );
 }
 
+const TRANSCENDENTALS: { type: NodeType; meanKey: string; askKey: string; draftKey: string }[] = [
+  { type: 'ens',     meanKey: 'help.ensMean',     askKey: 'help.ensAsk',     draftKey: 'help.ensDraft' },
+  { type: 'res',     meanKey: 'help.resMean',     askKey: 'help.resAsk',     draftKey: 'help.resDraft' },
+  { type: 'unum',    meanKey: 'help.unumMean',    askKey: 'help.unumAsk',    draftKey: 'help.unumDraft' },
+  { type: 'aliquid', meanKey: 'help.aliquidMean', askKey: 'help.aliquidAsk', draftKey: 'help.aliquidDraft' },
+  { type: 'verum',   meanKey: 'help.verumMean',   askKey: 'help.verumAsk',   draftKey: 'help.verumDraft' },
+  { type: 'bonum',   meanKey: 'help.bonumMean',   askKey: 'help.bonumAsk',   draftKey: 'help.bonumDraft' },
+];
+
 export function HelpOverlay() {
   const [open, setOpen] = useState(false);
   const t = useT();
+  const typeLabels = useTypeLabels();
   const lang = useLanguageStore((s) => s.lang);
   const toggleLang = useLanguageStore((s) => s.toggleLang);
 
@@ -198,6 +212,66 @@ export function HelpOverlay() {
                   {t('help.tipText')}
                 </div>
               </div>
+            </div>
+
+            {/* ── Transcendentia section ── */}
+            <div style={{ ...sectionTitle, marginTop: 24 }}>{t('help.transcendentals')}</div>
+            <div style={{ fontSize: 11, fontWeight: 300, color: '#555', lineHeight: 1.6, marginBottom: 10 }}>
+              {t('help.transcendentalsIntro')}
+            </div>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: 11,
+              fontWeight: 300,
+              color: '#1a1a1a',
+            }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(0,0,0,0.12)' }}>
+                  <th style={{ textAlign: 'left', padding: '5px 6px', fontWeight: 400, color: '#888', fontSize: 10, letterSpacing: '0.04em' }}>
+                    {t('help.tcHeaderLatin')}
+                  </th>
+                  <th style={{ textAlign: 'left', padding: '5px 6px', fontWeight: 400, color: '#888', fontSize: 10, letterSpacing: '0.04em' }}>
+                    {t('help.tcHeaderMean')}
+                  </th>
+                  <th style={{ textAlign: 'left', padding: '5px 6px', fontWeight: 400, color: '#888', fontSize: 10, letterSpacing: '0.04em' }}>
+                    {t('help.tcHeaderAsk')}
+                  </th>
+                  <th style={{ textAlign: 'left', padding: '5px 6px', fontWeight: 400, color: '#888', fontSize: 10, letterSpacing: '0.04em' }}>
+                    {t('help.tcHeaderDraft')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {TRANSCENDENTALS.map((row) => (
+                  <tr key={row.type} style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <td style={{ padding: '6px 6px', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{
+                          width: 10, height: 10, borderRadius: '50%',
+                          border: '0.5px solid rgba(0,0,0,0.2)',
+                          ...PATTERN_CSS[row.type],
+                        }} />
+                        <span style={{ fontStyle: 'italic', fontWeight: 400 }}>{row.type}</span>
+                        <span style={{ color: '#999' }}>·</span>
+                        <span>{typeLabels[row.type]}</span>
+                      </span>
+                    </td>
+                    <td style={{ padding: '6px 6px', color: '#444', verticalAlign: 'top' }}>
+                      {t(row.meanKey as never)}
+                    </td>
+                    <td style={{ padding: '6px 6px', color: '#1a1a1a', verticalAlign: 'top' }}>
+                      {t(row.askKey as never)}
+                    </td>
+                    <td style={{ padding: '6px 6px', color: '#888', fontSize: 10, verticalAlign: 'top' }}>
+                      {t(row.draftKey as never)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div style={{ fontSize: 10, fontWeight: 300, color: '#888', lineHeight: 1.6, marginTop: 10, fontStyle: 'italic' }}>
+              {t('help.transcendentalsFoot')}
             </div>
 
             <button

@@ -163,9 +163,9 @@ export function mapHierarchicalToSphere(
     const pos = allPositions.get(raw.id) ?? { x: 0, y: 0, z: 0 };
     const { theta, phi } = cartesianToSpherical(pos.x, pos.y, pos.z);
     const d = depthMap.get(raw.id) ?? 0;
-    const validType = ['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context'].includes(raw.type)
+    const validType = ['ens', 'res', 'unum', 'aliquid', 'verum', 'bonum'].includes(raw.type)
       ? raw.type as NodeData['type']
-      : 'concept';
+      : 'ens';
 
     return migrateNodeData({
       id: raw.id,

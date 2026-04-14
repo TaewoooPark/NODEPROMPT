@@ -476,7 +476,7 @@ export async function fillNodes(
       allFilled.push({
         id: s.id,
         label: parentLabel ? `${parentLabel} — ${depthLabel}` : depthLabel,
-        type: 'concept',
+        type: 'ens',
         weight: s.abstractionLevel === 'superordinate' ? 0.75
           : s.abstractionLevel === 'basic' ? 0.50
           : 0.30,

@@ -1,10 +1,13 @@
+// ── 6 Transcendentia (Aquinas, De Veritate q.1 a.1) ──
+// ens / res / unum / aliquid / verum / bonum
+// See HelpOverlay and README for the mapping of each to a metaphysical question.
 export type NodeType =
-  | 'concept'
-  | 'nuance'
-  | 'mood'
-  | 'philosophy'
-  | 'abstraction'
-  | 'context';
+  | 'ens'       // 존재 / Being — id quod est
+  | 'res'       // 본질 / Essence — quod habet quidditatem
+  | 'unum'      // 통일 / Unity — ens indivisum
+  | 'aliquid'   // 차이 / Difference — aliud-quid
+  | 'verum'     // 진리 / Truth — ens ut cognoscibile
+  | 'bonum';    // 가치 / Value — ens ut appetibile
 
 export type AbstractionLevel =
   | 'superordinate'   // D=0-1: 최고 추상 (Rosch 상위범주)
@@ -63,12 +66,12 @@ export interface NodeData {
 }
 
 export const NODE_COLORS: Record<NodeType, string> = {
-  concept:     '#2c2c2c',
-  nuance:      '#6b5344',
-  mood:        '#5a4460',
-  philosophy:  '#3d5167',
-  abstraction: '#6b4040',
-  context:     '#4a6050',
+  ens:     '#2c2c2c',
+  aliquid: '#6b5344',
+  bonum:   '#5a4460',
+  verum:   '#3d5167',
+  res:     '#6b4040',
+  unum:    '#4a6050',
 };
 
 export const DEPTH_COLORS: Record<number, string> = {

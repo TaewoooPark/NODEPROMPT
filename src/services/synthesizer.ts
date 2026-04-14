@@ -93,7 +93,7 @@ function renderTree(nodes: NodeData[]): string {
     return children.map((n) => {
       const prefix = indent === 0 ? '### ' : '  '.repeat(indent) + '├─ ';
       const facetStr = n.facets ? ` [${n.facets.epistemological}, ${n.facets.rhetorical}]` : '';
-      const line = `${prefix}${n.label} (w:${n.weight.toFixed(2)}, ${n.abstractionLevel})${facetStr}`;
+      const line = `${prefix}${n.label} [${n.type}] (w:${n.weight.toFixed(2)}, ${n.abstractionLevel})${facetStr}`;
       const desc = indent > 0 ? '' : `\n${'  '.repeat(indent + 1)}${n.description}`;
       const sub = render(n.id, indent + 1);
       return line + desc + (sub ? '\n' + sub : '');

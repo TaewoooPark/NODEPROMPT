@@ -38,11 +38,11 @@ export function useT() {
 export function useTypeLabels(): Record<NodeType, string> {
   const lang = useLanguageStore((s) => s.lang);
   return {
-    concept: getTranslation('type.concept', lang),
-    nuance: getTranslation('type.nuance', lang),
-    mood: getTranslation('type.mood', lang),
-    philosophy: getTranslation('type.philosophy', lang),
-    abstraction: getTranslation('type.abstraction', lang),
-    context: getTranslation('type.context', lang),
+    ens:     getTranslation('type.ens', lang),
+    res:     getTranslation('type.res', lang),
+    unum:    getTranslation('type.unum', lang),
+    aliquid: getTranslation('type.aliquid', lang),
+    verum:   getTranslation('type.verum', lang),
+    bonum:   getTranslation('type.bonum', lang),
   };
 }

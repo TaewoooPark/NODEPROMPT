@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import type { CSSProperties } from 'react';
 import type { NodeType } from '../types';
 
-export const ALL_NODE_TYPES: NodeType[] = ['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context'];
+// 6 Transcendentia (Aquinas, De Veritate q.1 a.1)
+export const ALL_NODE_TYPES: NodeType[] = ['ens', 'res', 'unum', 'aliquid', 'verum', 'bonum'];
 
 const SIZE = 128;
 const textureCache = new Map<NodeType, THREE.CanvasTexture>();
@@ -15,13 +16,13 @@ function drawPattern(ctx: CanvasRenderingContext2D, type: NodeType) {
   ctx.strokeStyle = '#1a1a1a';
 
   switch (type) {
-    case 'concept':
-      // Solid black — darkest
+    case 'ens':
+      // Solid — id quod est, the densest, most foundational
       ctx.fillRect(0, 0, S, S);
       break;
 
-    case 'nuance': {
-      // Horizontal stripes — medium
+    case 'aliquid': {
+      // Horizontal stripes — discrete lines marking difference
       ctx.lineWidth = 4;
       for (let y = 0; y < S; y += 18) {
         ctx.beginPath();
@@ -32,8 +33,8 @@ function drawPattern(ctx: CanvasRenderingContext2D, type: NodeType) {
       break;
     }
 
-    case 'mood':
-      // Dots — lightest
+    case 'bonum':
+      // Dots — scattered, the lightest, ens ut appetibile
       for (let y = 11; y < S; y += 22) {
         for (let x = 11; x < S; x += 22) {
           ctx.beginPath();
@@ -43,8 +44,8 @@ function drawPattern(ctx: CanvasRenderingContext2D, type: NodeType) {
       }
       break;
 
-    case 'philosophy': {
-      // Diagonal stripes (45deg) — medium-dark
+    case 'verum': {
+      // Diagonal stripes — rays of truth
       ctx.lineWidth = 5;
       for (let i = -S; i < S * 2; i += 16) {
         ctx.beginPath();
@@ -55,8 +56,8 @@ function drawPattern(ctx: CanvasRenderingContext2D, type: NodeType) {
       break;
     }
 
-    case 'abstraction': {
-      // Crosshatch — dark
+    case 'res': {
+      // Crosshatch — formal structure of quiddity
       ctx.lineWidth = 3.5;
       for (let i = -S; i < S * 2; i += 16) {
         ctx.beginPath();
@@ -71,8 +72,8 @@ function drawPattern(ctx: CanvasRenderingContext2D, type: NodeType) {
       break;
     }
 
-    case 'context': {
-      // Vertical stripes — medium-light
+    case 'unum': {
+      // Vertical stripes — ens indivisum, held as one column
       ctx.lineWidth = 3;
       for (let x = 0; x < S; x += 18) {
         ctx.beginPath();
@@ -103,33 +104,33 @@ export function getPatternTexture(type: NodeType): THREE.CanvasTexture {
 
 /** CSS inline styles for 2D HTML swatches (legend, context menu) */
 export const PATTERN_CSS: Record<NodeType, CSSProperties> = {
-  concept: { background: '#1a1a1a' },
-  nuance: {
+  ens: { background: '#1a1a1a' },
+  aliquid: {
     background: 'repeating-linear-gradient(0deg, #1a1a1a 0px, #1a1a1a 2px, #fff 2px, #fff 6px)',
   },
-  mood: {
+  bonum: {
     backgroundImage: 'radial-gradient(#1a1a1a 1.5px, transparent 1.5px)',
     backgroundSize: '5px 5px',
     backgroundColor: '#fff',
   },
-  philosophy: {
+  verum: {
     background: 'repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 2px, #fff 2px, #fff 6px)',
   },
-  abstraction: {
+  res: {
     background: `repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 5px),
                  repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 5px)`,
     backgroundColor: '#fff',
   },
-  context: {
+  unum: {
     background: 'repeating-linear-gradient(90deg, #1a1a1a 0px, #1a1a1a 2px, #fff 2px, #fff 6px)',
   },
 };
 
 export const TYPE_LABELS_KO: Record<NodeType, string> = {
-  concept: '개념',
-  nuance: '뉘앙스',
-  mood: '분위기',
-  philosophy: '철학',
-  abstraction: '추상',
-  context: '맥락',
+  ens:     '존재',
+  res:     '본질',
+  unum:    '통일',
+  aliquid: '차이',
+  verum:   '진리',
+  bonum:   '가치',
 };

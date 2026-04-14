@@ -4,12 +4,13 @@ import type { NodeType } from '../types';
 import { migrateNodeData } from '../types';
 import { useGraphStore } from '../store/useGraphStore';
 import { PATTERN_CSS } from '../utils/nodePatterns';
+import { useTypeLabels } from '../i18n/useLanguage';
 import { useHistoryStore } from '../store/useHistoryStore';
 import { getThreeRefs } from '../utils/threeRef';
 import { cartesianToSpherical, radialToSpherical } from '../utils/coordinates';
 import { useT } from '../i18n/useLanguage';
 
-const NODE_TYPES: NodeType[] = ['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context'];
+const NODE_TYPES: NodeType[] = ['ens', 'res', 'unum', 'aliquid', 'verum', 'bonum'];
 const MAX_DEPTH = 4;
 
 interface MenuState {
@@ -86,7 +87,7 @@ function createNodeAtPosition(
   const node = migrateNodeData({
     id,
     label: 'New Node',
-    type: 'concept' as NodeType,
+    type: 'ens' as NodeType,
     weight: 0.5,
     description: '',
     depth: 2,
@@ -111,6 +112,7 @@ export function ContextMenu() {
   const startEdgeCreation = useGraphStore((s) => s.startEdgeCreation);
   const pushAction = useHistoryStore((s) => s.pushAction);
   const t = useT();
+  const typeLabels = useTypeLabels();
 
   // 우클릭 감지 — radial + sphere 모두
   useEffect(() => {
@@ -242,7 +244,7 @@ export function ContextMenu() {
             }}
           >
             <span style={{ width: 10, height: 10, borderRadius: '50%', border: '1px solid rgba(0,0,0,0.2)', flexShrink: 0, ...PATTERN_CSS[tp] }} />
-            {tp}
+            {typeLabels[tp]}
           </div>
         ))}
 

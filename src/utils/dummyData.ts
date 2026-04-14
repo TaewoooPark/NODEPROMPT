@@ -4,25 +4,31 @@ import { cartesianToSpherical } from './coordinates';
 import type { Lang } from '../i18n/translations';
 
 const NODE_TYPES: NodeType[] = [
-  'concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context',
+  'ens', 'res', 'unum', 'aliquid', 'verum', 'bonum',
 ];
 
+// ens = 존재(Being) — 프롬프트가 '있다'고 정립하는 지시체
+// res = 본질(Essence) — 그것이 '무엇'인지 (quidditas)
+// unum = 통일(Unity) — 하나로 묶이는 근거
+// aliquid = 차이(Difference) — 구별짓는 것
+// verum = 진리(Truth) — 지성에 대해 참인 방식
+// bonum = 가치(Value) — 의지에 대해 욕구될 방식
 const LABELS_KO: Record<NodeType, string[]> = {
-  concept:     ['인공지능', '딥러닝', '자연어 처리', '윤리', '자율성', '학습', '추론', '데이터'],
-  nuance:      ['편향 우려', '과잉 의존', '인간 대체', '창의성 한계', '해석 불가', '맥락 손실', '감정 부재', '신뢰 문제'],
-  mood:        ['경이', '불안', '기대', '회의', '흥분', '두려움', '호기심', '경계'],
-  philosophy:  ['공리주의', '의무론', '덕 윤리', '실존주의', '실용주의', '구조주의', '포스트모던', '자유의지'],
-  abstraction: ['블랙박스', '창발성', '특이점', '피드백 루프', '메타인지', '튜링 테스트', '중국어 방', '프레임 문제'],
-  context:     ['기업 환경', '학술 연구', '일상 활용', '규제 정책', '교육 현장', '의료 분야', '군사 응용', '예술 창작'],
+  ens:     ['인공지능', '딥러닝', '자연어 처리', '자율 에이전트', '학습 시스템', '추론 엔진', '데이터셋', '모델'],
+  res:     ['블랙박스', '창발성', '특이점', '피드백 루프', '메타인지', '튜링 테스트', '중국어 방', '프레임 문제'],
+  unum:    ['기업 환경', '학술 연구', '일상 활용', '규제 정책', '교육 현장', '의료 분야', '군사 응용', '예술 창작'],
+  aliquid: ['편향 우려', '과잉 의존', '인간 대체', '창의성 한계', '해석 불가', '맥락 손실', '감정 부재', '신뢰 문제'],
+  verum:   ['공리주의', '의무론', '덕 윤리', '실존주의', '실용주의', '구조주의', '포스트모던', '자유의지'],
+  bonum:   ['경이', '불안', '기대', '회의', '흥분', '두려움', '호기심', '경계'],
 };
 
 const LABELS_EN: Record<NodeType, string[]> = {
-  concept:     ['Artificial Intelligence', 'Deep Learning', 'NLP', 'Ethics', 'Autonomy', 'Learning', 'Reasoning', 'Data'],
-  nuance:      ['Bias Concern', 'Over-reliance', 'Human Replacement', 'Creativity Limits', 'Unexplainability', 'Context Loss', 'Lack of Emotion', 'Trust Issues'],
-  mood:        ['Wonder', 'Anxiety', 'Anticipation', 'Skepticism', 'Excitement', 'Fear', 'Curiosity', 'Vigilance'],
-  philosophy:  ['Utilitarianism', 'Deontology', 'Virtue Ethics', 'Existentialism', 'Pragmatism', 'Structuralism', 'Postmodernism', 'Free Will'],
-  abstraction: ['Black Box', 'Emergence', 'Singularity', 'Feedback Loop', 'Metacognition', 'Turing Test', 'Chinese Room', 'Frame Problem'],
-  context:     ['Corporate', 'Academic Research', 'Everyday Use', 'Regulation', 'Education', 'Healthcare', 'Military', 'Art Creation'],
+  ens:     ['Artificial Intelligence', 'Deep Learning', 'NLP', 'Autonomous Agent', 'Learning System', 'Reasoning Engine', 'Dataset', 'Model'],
+  res:     ['Black Box', 'Emergence', 'Singularity', 'Feedback Loop', 'Metacognition', 'Turing Test', 'Chinese Room', 'Frame Problem'],
+  unum:    ['Corporate', 'Academic Research', 'Everyday Use', 'Regulation', 'Education', 'Healthcare', 'Military', 'Art Creation'],
+  aliquid: ['Bias Concern', 'Over-reliance', 'Human Replacement', 'Creativity Limits', 'Unexplainability', 'Context Loss', 'Lack of Emotion', 'Trust Issues'],
+  verum:   ['Utilitarianism', 'Deontology', 'Virtue Ethics', 'Existentialism', 'Pragmatism', 'Structuralism', 'Postmodernism', 'Free Will'],
+  bonum:   ['Wonder', 'Anxiety', 'Anticipation', 'Skepticism', 'Excitement', 'Fear', 'Curiosity', 'Vigilance'],
 };
 
 const DESC_KO = (label: string) => `${label}에 대한 개념`;

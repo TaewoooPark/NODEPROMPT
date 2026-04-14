@@ -92,7 +92,7 @@ export function PromptInput() {
       const placeholderRaw = skeleton.map((s) => ({
         id: s.id,
         label: '\u00B7',
-        type: 'concept' as const,
+        type: 'ens' as const,
         weight: 0.5,
         description: '',
         parentId: s.parentId,
@@ -139,7 +139,7 @@ export function PromptInput() {
           return {
             id: s.id,
             label: f?.label ?? '\u00B7',
-            type: f?.type ?? 'concept',
+            type: f?.type ?? 'ens',
             weight: f?.weight ?? 0.5,
             parentId: s.parentId,
             abstractionLevel: s.abstractionLevel,

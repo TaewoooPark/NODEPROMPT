@@ -58,7 +58,7 @@ export function buildHierarchyFromTree(nodes: NodeData[]): TreeInput {
 
 /**
  * NodeData[] → D3 계층 트리 구조 변환 (기존 타입 그룹핑 방식).
- * 루트: weight가 가장 높은 concept 노드.
+ * 루트: weight가 가장 높은 ens 노드 (ens = 존재, 트리의 가장 근본).
  * 나머지: parentId 기반 트리 구성, 없으면 type별 그룹핑.
  */
 export function buildHierarchy(nodes: NodeData[]): TreeInput {
@@ -66,7 +66,7 @@ export function buildHierarchy(nodes: NodeData[]): TreeInput {
 
   // 루트 선정: weight 최대 concept 노드
   const root = active
-    .filter((n) => n.type === 'concept')
+    .filter((n) => n.type === 'ens')
     .sort((a, b) => b.weight - a.weight)[0];
 
   if (!root) {

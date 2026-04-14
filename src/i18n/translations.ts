@@ -40,6 +40,46 @@ const translations = {
   },
   'help.close': { ko: 'Close', en: 'Close' },
 
+  // ── HelpOverlay — 6 Transcendentia (Aquinas, De Veritate q.1 a.1) ──
+  'help.transcendentals': { ko: '여섯 초월자 (Transcendentia)', en: 'The Six Transcendentia' },
+  'help.transcendentalsIntro': {
+    ko: '노드 타입은 아퀴나스의 여섯 초월자입니다 (De Veritate q.1 a.1). 범주를 초월한 여섯 가지 형이상학적 물음 — 같은 지시체에 대해 서로 다른 조명 면을 묻습니다. 한 노드가 여러 면에 해당할 수 있을 때는, 프롬프트가 *어느 물음으로* 그것을 붙잡고 있는지를 기준으로 선택합니다.',
+    en: 'Node types are Aquinas\'s six transcendentia (De Veritate q.1 a.1). They are six metaphysical questions that transcend the categories — each asks a different aspect of the same referent. When a node fits more than one, choose the register the prompt *leans into*.',
+  },
+  'help.tcHeaderLatin': { ko: '초월자', en: 'Transcendental' },
+  'help.tcHeaderMean': { ko: '의미', en: 'Meaning' },
+  'help.tcHeaderAsk': { ko: '무엇을 묻는가', en: 'The question it asks' },
+  'help.tcHeaderDraft': { ko: '1차안', en: 'First draft' },
+
+  'help.ensMean': { ko: '존재 — id quod est', en: 'Being — id quod est' },
+  'help.ensAsk': { ko: '이 프롬프트는 무엇을 "있다"고 정립하는가?', en: 'What does the prompt posit as existing?' },
+  'help.ensDraft': { ko: 'concept (핵심 개념)', en: 'concept' },
+
+  'help.resMean': { ko: '본질 — quod habet quidditatem', en: 'Essence — quod habet quidditatem' },
+  'help.resAsk': { ko: '이것의 "무엇임(quidditas)"은 무엇인가?', en: 'What IS it, in its nature?' },
+  'help.resDraft': { ko: 'abstraction (추상·형식)', en: 'abstraction' },
+
+  'help.unumMean': { ko: '통일 — ens indivisum', en: 'Unity — ens indivisum' },
+  'help.unumAsk': { ko: '어떤 지평 안에서 하나로 묶이는가?', en: 'Under what horizon is it held as one?' },
+  'help.unumDraft': { ko: 'context (상황·맥락)', en: 'context' },
+
+  'help.aliquidMean': { ko: '차이 — aliud-quid', en: 'Difference — aliud-quid' },
+  'help.aliquidAsk': { ko: '이것을 인접한 것과 구별짓는 것은?', en: 'What marks it as other than its neighbor?' },
+  'help.aliquidDraft': { ko: 'nuance (뉘앙스)', en: 'nuance' },
+
+  'help.verumMean': { ko: '진리 — ens ut cognoscibile', en: 'Truth — ens ut cognoscibile' },
+  'help.verumAsk': { ko: '어떤 진리 프레임 안에서 성립하는가?', en: 'Under which truth-frame does it hold?' },
+  'help.verumDraft': { ko: 'philosophy (세계관)', en: 'philosophy' },
+
+  'help.bonumMean': { ko: '가치 — ens ut appetibile', en: 'Value — ens ut appetibile' },
+  'help.bonumAsk': { ko: '무엇을 향해 기울어 있는가 — 원하는가 두려워하는가?', en: 'Toward what is it oriented — desired or feared?' },
+  'help.bonumDraft': { ko: 'mood (정서)', en: 'mood' },
+
+  'help.transcendentalsFoot': {
+    ko: '현재 UI 라벨(존재/본질/통일/차이/진리/가치)은 각각 하나의 초월자를 가리키도록 고정되어 있습니다. 기존 6가지 유형(concept/nuance/mood/philosophy/abstraction/context)은 이 방향의 1차 초안이었고, 이번 개정은 그 초안을 초월자 층위로 끌어올린 것입니다.',
+    en: 'The current UI labels (Being/Essence/Unity/Difference/Truth/Value) each point to exactly one transcendental. The earlier six types (concept/nuance/mood/philosophy/abstraction/context) were a first draft in this direction; this revision raises that draft to the transcendental register.',
+  },
+
   // ── Toolbar ──
   'toolbar.apiKeySettings': { ko: 'API Key 설정', en: 'API Key Settings' },
   'toolbar.keyStorageNote': { ko: '키는 브라우저에만 저장됩니다 (localStorage)', en: 'Key is stored in browser only (localStorage)' },
@@ -86,13 +126,13 @@ const translations = {
   'gesture.enable': { ko: '제스처 제어 켜기', en: 'Enable gesture control' },
   'gesture.previewToggle': { ko: '웹캠 미리보기 토글', en: 'Toggle webcam preview' },
 
-  // ── Node Type Labels ──
-  'type.concept': { ko: '개념', en: 'Concept' },
-  'type.nuance': { ko: '뉘앙스', en: 'Nuance' },
-  'type.mood': { ko: '분위기', en: 'Mood' },
-  'type.philosophy': { ko: '철학', en: 'Philosophy' },
-  'type.abstraction': { ko: '추상', en: 'Abstraction' },
-  'type.context': { ko: '맥락', en: 'Context' },
+  // ── Node Type Labels — 6 Transcendentia (Aquinas, De Veritate q.1 a.1) ──
+  'type.ens':     { ko: '존재', en: 'Being' },
+  'type.res':     { ko: '본질', en: 'Essence' },
+  'type.unum':    { ko: '통일', en: 'Unity' },
+  'type.aliquid': { ko: '차이', en: 'Difference' },
+  'type.verum':   { ko: '진리', en: 'Truth' },
+  'type.bonum':   { ko: '가치', en: 'Value' },
 } as const;
 
 export type TranslationKey = keyof typeof translations;

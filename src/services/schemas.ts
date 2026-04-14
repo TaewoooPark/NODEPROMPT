@@ -6,7 +6,7 @@ import type { ExtractionConfig } from '../types/extraction';
 export const ExtractedNodeSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1),
-  type: z.enum(['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context']),
+  type: z.enum(['ens', 'res', 'unum', 'aliquid', 'verum', 'bonum']),
   weight: z.number().min(0).max(1),
   description: z.string(),
   parentId: z.string().nullable().default(null),
@@ -28,7 +28,8 @@ export type ExtractionResult = z.infer<typeof ExtractionResultSchema>;
 
 // ── 계층적 추출 스키마 (다단계) ──
 
-const NODE_TYPES = ['concept', 'nuance', 'mood', 'philosophy', 'abstraction', 'context'] as const;
+// 6 Transcendentia (Aquinas, De Veritate q.1 a.1)
+const NODE_TYPES = ['ens', 'res', 'unum', 'aliquid', 'verum', 'bonum'] as const;
 const EDGE_RELATIONS = ['causal', 'contrast', 'amplify', 'suppress', 'parallel', 'dependency', 'parent-child', 'cross-link'] as const;
 
 const FacetSchema = z.object({
