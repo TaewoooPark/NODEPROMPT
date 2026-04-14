@@ -25,6 +25,8 @@
 
 > *"사고는 비선형이다. 언어는 선형이다. 구의 표면이 그 간극을 메운다."*
 
+[English README](./README.md)
+
 <p align="center">
   <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
 </p>
@@ -33,7 +35,6 @@
   <img src="./public/screenshots/sphere.png" alt="NodePrompt Sphere 모드 — 피보나치 격자로 3D 구 표면에 분포된 50개 이상의 라벨 노드가 베지어 엣지로 연결된 개념 그래프. Mark Lombardi의 흑백 네트워크 미학을 따르며, 좌측의 자연어 프롬프트가 공간적으로 탐색 가능한 개념 그래프로 분해됩니다." width="100%">
 </p>
 
-[English README](./README.md)
 
 ---
 
