@@ -32,6 +32,7 @@ function SceneContent() {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const sphereRef = useRef<SphereSurfaceHandle>(null);
   const mode = useGraphStore((s) => s.mode);
+  const isTransitioning = useGraphStore((s) => s.isTransitioning);
 
   useNodeSpawnAnimation();
   useRadialPhysics();
@@ -45,7 +46,7 @@ function SceneContent() {
       <EdgeRenderer />
       <TempEdgeLine />
 
-      {mode === 'interior' ? (
+      {mode === 'interior' && !isTransitioning ? (
         <InteriorView controlsRef={controlsRef} />
       ) : (
         <SphereView />

@@ -47,7 +47,7 @@ export function SceneInner({ controlsRef, sphereRef }: SceneInnerProps) {
     if (!target) return;
     if (controls) controls.enabled = false;
 
-    if (mode === 'sphere') {
+    if (mode === 'sphere' || mode === 'interior') {
       morphToRadial(camera, target, wireframeMat);
     } else if (mode === 'radial') {
       morphToSphere(camera, target, wireframeMat);
