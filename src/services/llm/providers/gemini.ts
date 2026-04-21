@@ -1,6 +1,7 @@
 import type {
-  LLMProvider, StructuredCallOpts, SimpleCallOpts, StreamOpts,
+  LLMProvider, StructuredCallOpts, SimpleCallOpts, StreamOpts, Attachment,
 } from '../types';
+import { UnsupportedAttachmentError } from '../types';
 import { PROVIDER_CATALOG } from '../catalog';
 
 // Gemini REST via generativelanguage.googleapis.com
@@ -30,6 +31,22 @@ function toGeminiSchema(schema: any): any {
     }
   }
   return out;
+}
+
+// 멀티모달 parts: 첨부는 앞에, 텍스트는 뒤에.
+function buildUserParts(user: string, attachments: readonly Attachment[] | undefined): unknown[] {
+  const parts: unknown[] = [];
+  if (attachments) {
+    for (const a of attachments) {
+      if (a.kind === 'image' || a.kind === 'pdf') {
+        parts.push({ inline_data: { mime_type: a.mimeType, data: a.dataBase64 } });
+      } else {
+        throw new UnsupportedAttachmentError('gemini', (a as Attachment).kind);
+      }
+    }
+  }
+  parts.push({ text: user });
+  return parts;
 }
 
 export function createGeminiProvider(getKey: () => string): LLMProvider {
@@ -73,7 +90,7 @@ export function createGeminiProvider(getKey: () => string): LLMProvider {
         signal: opts.signal,
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: opts.system }] },
-          contents: [{ role: 'user', parts: [{ text: opts.user }] }],
+          contents: [{ role: 'user', parts: buildUserParts(opts.user, opts.attachments) }],
           generationConfig: {
             temperature: opts.temperature,
             maxOutputTokens: opts.maxTokens,
@@ -105,7 +122,7 @@ export function createGeminiProvider(getKey: () => string): LLMProvider {
         signal: opts.signal ?? AbortSignal.timeout(15_000),
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: opts.system }] },
-          contents: [{ role: 'user', parts: [{ text: opts.user }] }],
+          contents: [{ role: 'user', parts: buildUserParts(opts.user, opts.attachments) }],
           generationConfig: {
             temperature: opts.temperature,
             maxOutputTokens: opts.maxTokens,

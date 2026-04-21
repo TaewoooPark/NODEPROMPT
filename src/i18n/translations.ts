@@ -96,6 +96,12 @@ const translations = {
   'prompt.phase2': { ko: '내용 채움', en: 'Filling content' },
   'prompt.phase3': { ko: '검증 및 패치', en: 'Validation & Patch' },
   'prompt.cancelled': { ko: '요청이 취소되었습니다.', en: 'Request was cancelled.' },
+  'prompt.attach.drop': { ko: '이미지·PDF를 여기로 드래그하거나 클릭해 선택', en: 'Drop image/PDF here or click to select' },
+  'prompt.attach.remove': { ko: '제거', en: 'Remove' },
+  'prompt.attach.tooLarge': { ko: '파일이 너무 큽니다 (최대 {max}MB)', en: 'File too large (max {max}MB)' },
+  'prompt.attach.unsupportedType': { ko: '지원하지 않는 파일 형식입니다', en: 'Unsupported file type' },
+  'prompt.attach.providerNoImage': { ko: '{provider}는 이미지 입력을 지원하지 않습니다. 다른 프로바이더를 선택하거나 이미지를 제거하세요.', en: '{provider} does not support image input. Choose another provider or remove images.' },
+  'prompt.attach.providerNoPdf': { ko: '{provider}는 PDF 입력을 지원하지 않습니다. Anthropic 또는 Gemini를 사용하세요.', en: '{provider} does not support PDF input. Use Anthropic or Gemini.' },
 
   // ── NodeEditPanel ──
   'edit.dblClickLabel': { ko: '더블클릭하여 이름 수정', en: 'Double-click to edit name' },

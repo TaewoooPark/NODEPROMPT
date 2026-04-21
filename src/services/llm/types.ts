@@ -21,6 +21,23 @@ export interface ToolDef {
   input_schema: any;
 }
 
+/** 사용자 프롬프트와 함께 전송되는 멀티모달 첨부 */
+export type Attachment =
+  | { kind: 'image'; mimeType: string; dataBase64: string; name?: string }
+  | { kind: 'pdf'; mimeType: 'application/pdf'; dataBase64: string; name?: string };
+
+/** 특정 프로바이더가 지원하지 않는 첨부가 주어졌을 때 던지는 에러. */
+export class UnsupportedAttachmentError extends Error {
+  providerId: ProviderId;
+  kind: Attachment['kind'];
+  constructor(providerId: ProviderId, kind: Attachment['kind']) {
+    super(`Provider '${providerId}' does not support ${kind} attachments.`);
+    this.name = 'UnsupportedAttachmentError';
+    this.providerId = providerId;
+    this.kind = kind;
+  }
+}
+
 export interface StructuredCallOpts {
   role: ModelRole;
   system: string;
@@ -29,6 +46,7 @@ export interface StructuredCallOpts {
   temperature: number;
   maxTokens: number;
   signal: AbortSignal;
+  attachments?: Attachment[];
 }
 
 export interface SimpleCallOpts {
@@ -38,6 +56,7 @@ export interface SimpleCallOpts {
   temperature: number;
   maxTokens: number;
   signal?: AbortSignal;
+  attachments?: Attachment[];
 }
 
 export interface StreamOpts {

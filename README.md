@@ -21,7 +21,7 @@
   <img src="https://img.shields.io/badge/Qwen-000000?style=flat-square&labelColor=000000&color=000000" alt="Alibaba Qwen">
 </p>
 
-NodePrompt decomposes natural language prompts into multi-dimensional concept graphs, renders them on a 3D sphere, and lets users spatially reorganize ideas before resynthesizing them into structured prompts for higher-quality AI responses.
+NodePrompt decomposes prompts — text, images, or PDFs — into multi-dimensional concept graphs, renders them on a 3D sphere, and lets users spatially reorganize ideas before resynthesizing them into structured prompts for higher-quality AI responses.
 
 > *"Thinking is non-linear. Language is linear. The sphere bridges that gap."*
 
@@ -122,6 +122,33 @@ NodePrompt's six node types are Aquinas's six *transcendentia* from *De Veritate
 | **bonum** — Value | *ens ut appetibile* — being as desirable to will | How is it desirable to a will? | Tone, mood, affective charge, values |
 
 The six are not six *kinds* of being but six *aspects* of the same being — "convertibilia cum ente" (convertible with being itself). A single concept can be read through any register; the register chosen is the lens, not the content. Each type is distinguished by a unique pattern texture (Lombardi-style: no colors, pattern-only differentiation), and the Help overlay (`?` button) contains the full mapping with example questions.
+
+### Multimodal Prompting
+
+Attach images and PDFs directly to the prompt — the extraction pipeline reads them alongside the text. Drag-and-drop, click, or paste into the dropzone below the textarea.
+
+| Use case | What to attach | What you get |
+|---|---|---|
+| Research paper | PDF | Argument decomposed — premises, method, claims as typed nodes |
+| Whiteboard / notebook sketch | Photo | Arrows become edges, clusters become hierarchy, handwriting becomes labels |
+| UI mockup or design export | Image / Figma PNG | Design surface sorted through the six transcendental registers |
+| Architecture / flow diagram | Image | Structure read as structure, not re-described as prose |
+| Chart or plot | Image | Quantities, relationships, and implied claims surfaced as nodes |
+
+Text is optional when an attachment is present — and when text *is* present, it supplies the *angle* the attachment should be read from (e.g. "what are the methodological commitments here?" vs. "what would this imply for practice?").
+
+Limits: 5 MB per image (JPEG/PNG/WebP/GIF), 10 MB per PDF. Capability is provider-specific:
+
+| Provider | Image | PDF |
+|---|---|---|
+| Anthropic Claude | yes | yes |
+| Google Gemini | yes | yes |
+| OpenAI GPT | yes | no |
+| xAI Grok | yes | no |
+| DeepSeek | no | no |
+| Alibaba Qwen | no | no |
+
+Switching the active provider rewires the dropzone to match the new provider's capabilities. Unsupported files are rejected at the UI layer with a specific error message before any network call.
 
 ### Interactive Graph Editing
 
@@ -238,9 +265,9 @@ Browser-entered keys take priority over `.env`. Legacy single-key installs (`nod
 
 ### Quick Start
 
-1. Type a prompt (e.g., *"The impact of artificial intelligence on creative industries"*)
+1. Type a prompt (e.g., *"The impact of artificial intelligence on creative industries"*) — or drop an image / PDF into the dropzone, with or without text
 2. Adjust **N** (node count, 5–50) and **D** (depth, 1–5) sliders
-3. Click **Extract** — AI decomposes your prompt into a concept graph on the sphere
+3. Click **Extract** — AI decomposes your prompt (and any attachments) into a concept graph on the sphere
 4. Press `Space` to enter Radial mode
 5. Drag nodes, adjust weights, delete irrelevant concepts, create new edges
 6. Click **Synthesize** to build a structured prompt from your edited graph

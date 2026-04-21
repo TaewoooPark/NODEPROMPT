@@ -1,4 +1,5 @@
-import type { LLMProvider, ProviderId } from './types';
+import type { LLMProvider, ProviderId, Attachment } from './types';
+import { UnsupportedAttachmentError } from './types';
 import { PROVIDER_CATALOG } from './catalog';
 import { createAnthropicProvider } from './providers/anthropic';
 import { createOpenAICompatProvider } from './providers/openaiCompat';
@@ -131,4 +132,25 @@ export function getProvider(id?: ProviderId): LLMProvider {
 
 export function resolveModelId(id: ProviderId, role: 'fast' | 'flagship'): string {
   return PROVIDER_CATALOG[id].defaultModels[role].id;
+}
+
+/** 현재 활성 프로바이더가 주어진 첨부 종류를 전부 지원하는지 검사. 미지원 첨부 있으면 throw. */
+export function assertAttachmentsSupported(
+  providerId: ProviderId,
+  attachments: readonly Attachment[] | undefined,
+): void {
+  if (!attachments || attachments.length === 0) return;
+  const supports = PROVIDER_CATALOG[providerId].supports;
+  for (const a of attachments) {
+    if (a.kind === 'image' && !supports.image) {
+      throw new UnsupportedAttachmentError(providerId, 'image');
+    }
+    if (a.kind === 'pdf' && !supports.pdf) {
+      throw new UnsupportedAttachmentError(providerId, 'pdf');
+    }
+  }
+}
+
+export function providerSupports(id: ProviderId): { image: boolean; pdf: boolean } {
+  return PROVIDER_CATALOG[id].supports;
 }

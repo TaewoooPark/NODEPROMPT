@@ -95,9 +95,10 @@ export function ResponsePanel() {
     setIsGenerating(false);
   }, []);
 
-  if (!originalPrompt) return null;
-
-  const synthesized = synthesizePrompt(originalPrompt, nodeArray, Array.from(edges.values()));
+  const synthesized = originalPrompt
+    ? synthesizePrompt(originalPrompt, nodeArray, Array.from(edges.values()))
+    : '';
+  const canGenerate = Boolean(originalPrompt) && nodeArray.length > 0;
 
   return (
     <div style={containerStyle}>
@@ -133,13 +134,13 @@ export function ResponsePanel() {
           <button
             style={{
               ...btnStyle,
-              background: nodeArray.length > 0 ? '#000' : '#ccc',
+              background: canGenerate ? '#000' : '#ccc',
               color: '#fff',
               flex: 1,
-              opacity: nodeArray.length > 0 ? 1 : 0.5,
+              opacity: canGenerate ? 1 : 0.5,
             }}
             onClick={handleGenerate}
-            disabled={nodeArray.length === 0}
+            disabled={!canGenerate}
           >
             {t('resp.generate')}
           </button>

@@ -1,10 +1,37 @@
-import { useState, useCallback, type CSSProperties } from 'react';
+import { useState, useCallback, useRef, type CSSProperties, type DragEvent } from 'react';
 import { useGraphStore } from '../store/useGraphStore';
 import { scaffoldNodes, fillNodes, validateGraph, createExtractController, cancelRequest } from '../services/claude';
 import { mapHierarchicalToSphere } from '../services/mapNodesToSphere';
 import { computeBranchingFactor } from '../types/extraction';
 import type { NodeData, EdgeData } from '../types';
 import { useT } from '../i18n/useLanguage';
+import { getActiveProviderId, providerSupports } from '../services/llm/registry';
+import { PROVIDER_CATALOG } from '../services/llm/catalog';
+import type { Attachment } from '../services/llm/types';
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_PDF_BYTES = 10 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+type AttachmentItem = Attachment & {
+  id: string;
+  sizeBytes: number;
+  previewUrl?: string; // 이미지만
+};
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // "data:image/png;base64,xxxxx" → "xxxxx"
+      const comma = result.indexOf(',');
+      resolve(comma >= 0 ? result.slice(comma + 1) : result);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
 
 const containerStyle: CSSProperties = {
   position: 'fixed',
@@ -60,6 +87,9 @@ const sliderRow: CSSProperties = {
 export function PromptInput() {
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isProcessing = useGraphStore((s) => s.isProcessing);
   const replaceGraph = useGraphStore((s) => s.replaceGraph);
   const sphereRadius = useGraphStore((s) => s.sphereRadius);
@@ -73,13 +103,97 @@ export function PromptInput() {
 
   const branchingFactor = computeBranchingFactor(extractionConfig.maxNodes, extractionConfig.maxDepth);
 
+  const addFiles = useCallback(async (files: FileList | File[]) => {
+    setError('');
+    const providerId = getActiveProviderId();
+    const providerLabel = PROVIDER_CATALOG[providerId].label;
+    const supports = providerSupports(providerId);
+    const next: AttachmentItem[] = [];
+
+    for (const file of Array.from(files)) {
+      const isImage = ACCEPTED_IMAGE_TYPES.includes(file.type);
+      const isPdf = file.type === 'application/pdf';
+
+      if (!isImage && !isPdf) {
+        setError(t('prompt.attach.unsupportedType'));
+        continue;
+      }
+      if (isImage && !supports.image) {
+        setError(t('prompt.attach.providerNoImage').replace('{provider}', providerLabel));
+        continue;
+      }
+      if (isPdf && !supports.pdf) {
+        setError(t('prompt.attach.providerNoPdf').replace('{provider}', providerLabel));
+        continue;
+      }
+
+      const maxBytes = isImage ? MAX_IMAGE_BYTES : MAX_PDF_BYTES;
+      if (file.size > maxBytes) {
+        setError(t('prompt.attach.tooLarge').replace('{max}', String(Math.round(maxBytes / (1024 * 1024)))));
+        continue;
+      }
+
+      try {
+        const base64 = await fileToBase64(file);
+        const id = `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        if (isImage) {
+          next.push({
+            id, kind: 'image', mimeType: file.type, dataBase64: base64,
+            name: file.name, sizeBytes: file.size,
+            previewUrl: URL.createObjectURL(file),
+          });
+        } else {
+          next.push({
+            id, kind: 'pdf', mimeType: 'application/pdf', dataBase64: base64,
+            name: file.name, sizeBytes: file.size,
+          });
+        }
+      } catch (e) {
+        console.warn('파일 읽기 실패:', e);
+      }
+    }
+    if (next.length > 0) setAttachments((prev) => [...prev, ...next]);
+  }, [t]);
+
+  const removeAttachment = useCallback((id: string) => {
+    setAttachments((prev) => {
+      const target = prev.find((a) => a.id === id);
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((a) => a.id !== id);
+    });
+  }, []);
+
+  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files.length > 0) void addFiles(e.dataTransfer.files);
+  }, [addFiles]);
+
+  const providerId = getActiveProviderId();
+  const supports = providerSupports(providerId);
+  const acceptAttr = [
+    ...(supports.image ? ACCEPTED_IMAGE_TYPES : []),
+    ...(supports.pdf ? ['application/pdf'] : []),
+  ].join(',');
+
   const handleExtract = useCallback(async () => {
     const prompt = text.trim();
-    if (!prompt || isProcessing) return;
+    const hasAttachments = attachments.length > 0;
+    // 텍스트나 첨부 둘 중 하나는 있어야 함.
+    if ((!prompt && !hasAttachments) || isProcessing) return;
 
     setError('');
     setProcessing(true);
-    setOriginalPrompt(prompt);
+    setOriginalPrompt(prompt || (hasAttachments ? '[multimodal input]' : ''));
+
+    // Provider에 넘길 순수 Attachment 배열 (UI용 필드 제거).
+    const attachmentsForApi: Attachment[] = attachments.map((a) =>
+      a.kind === 'image'
+        ? { kind: 'image', mimeType: a.mimeType, dataBase64: a.dataBase64, name: a.name }
+        : { kind: 'pdf', mimeType: 'application/pdf', dataBase64: a.dataBase64, name: a.name },
+    );
+    // 텍스트가 비어있으면 추출 프롬프트에 placeholder 문구 전달.
+    const effectivePrompt = prompt || 'Extract concepts from the attached file(s).';
 
     const controller = createExtractController(300_000);
     const config = { ...extractionConfig, branchingFactor };
@@ -87,7 +201,7 @@ export function PromptInput() {
     try {
       // ── Phase 1: Scaffold ──
       setExtractionProgress({ pass: 1, total: 3, nodesSoFar: 0 });
-      const skeleton = await scaffoldNodes(prompt, config, controller.signal);
+      const skeleton = await scaffoldNodes(effectivePrompt, config, controller.signal, attachmentsForApi);
 
       const placeholderRaw = skeleton.map((s) => ({
         id: s.id,
@@ -115,7 +229,7 @@ export function PromptInput() {
 
       // ── Phase 2: Fill ──
       setExtractionProgress({ pass: 2, total: 3, nodesSoFar: 0 });
-      const fills = await fillNodes(prompt, skeleton, controller.signal);
+      const fills = await fillNodes(effectivePrompt, skeleton, controller.signal, attachmentsForApi);
 
       const store = useGraphStore.getState();
       for (let i = 0; i < fills.length; i++) {
@@ -145,7 +259,7 @@ export function PromptInput() {
             abstractionLevel: s.abstractionLevel,
           };
         });
-        const validation = await validateGraph(prompt, fullNodes, controller.signal);
+        const validation = await validateGraph(effectivePrompt, fullNodes, controller.signal, attachmentsForApi);
 
         const latestStore = useGraphStore.getState();
         for (const patch of validation.patches) {
@@ -227,7 +341,7 @@ export function PromptInput() {
               if (parentLabel) {
                 updates.description = `${parentLabel}${siblingLabels ? ` (${siblingLabels} 등)` : ''}과 관련된 하위 개념`;
               } else {
-                updates.description = `프롬프트 "${prompt.slice(0, 30)}…"에서 추출된 개념`;
+                updates.description = `프롬프트 "${effectivePrompt.slice(0, 30)}…"에서 추출된 개념`;
               }
             }
 
@@ -247,7 +361,7 @@ export function PromptInput() {
       setProcessing(false);
       setExtractionProgress(null);
     }
-  }, [text, isProcessing, sphereRadius, replaceGraph, setOriginalPrompt, setProcessing, extractionConfig, branchingFactor, setExtractionProgress, t]);
+  }, [text, attachments, isProcessing, sphereRadius, replaceGraph, setOriginalPrompt, setProcessing, extractionConfig, branchingFactor, setExtractionProgress, t]);
 
   const handleCancel = useCallback(() => {
     cancelRequest();
@@ -255,8 +369,30 @@ export function PromptInput() {
     setExtractionProgress(null);
   }, [setProcessing, setExtractionProgress]);
 
+  const canAttach = supports.image || supports.pdf;
+  const dropzoneStyle: CSSProperties = {
+    border: `1px dashed ${dragOver ? '#000' : 'rgba(0,0,0,0.2)'}`,
+    borderRadius: 8,
+    padding: 8,
+    fontSize: 11,
+    color: canAttach ? '#666' : '#bbb',
+    textAlign: 'center',
+    cursor: canAttach ? 'pointer' : 'not-allowed',
+    background: dragOver ? 'rgba(0,0,0,0.04)' : 'transparent',
+    transition: 'background 0.15s ease, border-color 0.15s ease',
+  };
+
   return (
-    <div style={containerStyle}>
+    <div
+      style={containerStyle}
+      onDragOver={(e) => {
+        if (!canAttach) return;
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={canAttach ? handleDrop : undefined}
+    >
       <div style={{ fontSize: 11, color: '#999', fontWeight: 400, letterSpacing: '0.05em' }}>PROMPT</div>
       <textarea
         style={textareaStyle}
@@ -270,6 +406,64 @@ export function PromptInput() {
           }
         }}
       />
+
+      {/* 첨부 드롭존 */}
+      <div
+        style={dropzoneStyle}
+        onClick={() => canAttach && fileInputRef.current?.click()}
+        title={canAttach ? undefined : PROVIDER_CATALOG[providerId].label}
+      >
+        {canAttach
+          ? t('prompt.attach.drop')
+          : `${PROVIDER_CATALOG[providerId].label} — ${t('prompt.attach.providerNoImage').replace('{provider}', '').replace(/^\s*—\s*/, '')}`}
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={acceptAttr}
+        multiple
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          if (e.target.files) void addFiles(e.target.files);
+          e.target.value = '';
+        }}
+      />
+
+      {/* 첨부 칩 리스트 */}
+      {attachments.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {attachments.map((a) => (
+            <div
+              key={a.id}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '4px 8px', borderRadius: 6,
+                background: 'rgba(0,0,0,0.05)', fontSize: 11, color: '#333',
+                maxWidth: '100%',
+              }}
+            >
+              {a.kind === 'image' && a.previewUrl && (
+                <img
+                  src={a.previewUrl}
+                  alt=""
+                  style={{ width: 20, height: 20, borderRadius: 3, objectFit: 'cover' }}
+                />
+              )}
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>
+                {a.kind === 'pdf' ? '📄 ' : ''}{a.name ?? a.kind}
+              </span>
+              <button
+                onClick={() => removeAttachment(a.id)}
+                style={{
+                  border: 'none', background: 'transparent', cursor: 'pointer',
+                  color: '#999', fontSize: 14, padding: 0, lineHeight: 1,
+                }}
+                aria-label={t('prompt.attach.remove')}
+              >×</button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* D/N 슬라이더 */}
       <div style={sliderRow}>
@@ -297,15 +491,18 @@ export function PromptInput() {
           <button style={{ ...btnStyle, background: '#c00', color: '#fff', flex: 1 }} onClick={handleCancel}>
             {t('prompt.cancel')}
           </button>
-        ) : (
-          <button
-            style={{ ...btnStyle, background: text.trim() ? '#000' : '#ccc', color: '#fff', flex: 1, opacity: text.trim() ? 1 : 0.5 }}
-            onClick={handleExtract}
-            disabled={!text.trim()}
-          >
-            {t('prompt.analyze')}
-          </button>
-        )}
+        ) : (() => {
+          const canSubmit = Boolean(text.trim()) || attachments.length > 0;
+          return (
+            <button
+              style={{ ...btnStyle, background: canSubmit ? '#000' : '#ccc', color: '#fff', flex: 1, opacity: canSubmit ? 1 : 0.5 }}
+              onClick={handleExtract}
+              disabled={!canSubmit}
+            >
+              {t('prompt.analyze')}
+            </button>
+          );
+        })()}
       </div>
 
       {extractionProgress && (

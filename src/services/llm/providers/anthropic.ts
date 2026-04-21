@@ -1,9 +1,35 @@
 import type {
-  LLMProvider, StructuredCallOpts, SimpleCallOpts, StreamOpts,
+  LLMProvider, StructuredCallOpts, SimpleCallOpts, StreamOpts, Attachment,
 } from '../types';
+import { UnsupportedAttachmentError } from '../types';
 import { PROVIDER_CATALOG } from '../catalog';
 
 const BASE = '/api/anthropic/v1';
+
+// user 메시지를 멀티모달 content 배열로 변환. attachments가 있으면 파일 블록들이 앞에,
+// 텍스트는 마지막에 배치 (Anthropic 권장 순서 — 파일 → 지시).
+function buildUserContent(user: string, attachments: readonly Attachment[] | undefined): unknown {
+  if (!attachments || attachments.length === 0) return user;
+
+  const blocks: unknown[] = [];
+  for (const a of attachments) {
+    if (a.kind === 'image') {
+      blocks.push({
+        type: 'image',
+        source: { type: 'base64', media_type: a.mimeType, data: a.dataBase64 },
+      });
+    } else if (a.kind === 'pdf') {
+      blocks.push({
+        type: 'document',
+        source: { type: 'base64', media_type: 'application/pdf', data: a.dataBase64 },
+      });
+    } else {
+      throw new UnsupportedAttachmentError('anthropic', (a as Attachment).kind);
+    }
+  }
+  blocks.push({ type: 'text', text: user });
+  return blocks;
+}
 
 export function createAnthropicProvider(getKey: () => string): LLMProvider {
   function headers(): Record<string, string> {
@@ -51,7 +77,7 @@ export function createAnthropicProvider(getKey: () => string): LLMProvider {
           max_tokens: opts.maxTokens,
           temperature: opts.temperature,
           system: opts.system,
-          messages: [{ role: 'user', content: opts.user }],
+          messages: [{ role: 'user', content: buildUserContent(opts.user, opts.attachments) }],
           tools: [opts.tool],
           tool_choice: { type: 'tool', name: opts.tool.name },
         }),
@@ -78,7 +104,7 @@ export function createAnthropicProvider(getKey: () => string): LLMProvider {
           max_tokens: opts.maxTokens,
           temperature: opts.temperature,
           system: opts.system,
-          messages: [{ role: 'user', content: opts.user }],
+          messages: [{ role: 'user', content: buildUserContent(opts.user, opts.attachments) }],
         }),
       });
       if (!res.ok) throw new Error(`Anthropic API 오류: ${res.status}`);

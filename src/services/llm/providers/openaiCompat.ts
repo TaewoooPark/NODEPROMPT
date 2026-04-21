@@ -1,6 +1,7 @@
 import type {
-  LLMProvider, ProviderId, StructuredCallOpts, SimpleCallOpts, StreamOpts,
+  LLMProvider, ProviderId, StructuredCallOpts, SimpleCallOpts, StreamOpts, Attachment,
 } from '../types';
+import { UnsupportedAttachmentError } from '../types';
 import { PROVIDER_CATALOG } from '../catalog';
 
 // ── OpenAI 호환 API (OpenAI / Grok / DeepSeek / Qwen) ──
@@ -46,6 +47,35 @@ function normalizeSchema(schema: any): any {
   return out;
 }
 
+// OpenAI Chat Completions는 image_url 블록으로 이미지를 받는다. PDF는 Files API 별도 → 지원 안 함.
+// Grok 4.x도 동일 포맷. DeepSeek/Qwen 기본 모델은 비전 미지원이라 attachment 자체를 거절.
+function buildUserContent(
+  providerId: ProviderId,
+  user: string,
+  attachments: readonly Attachment[] | undefined,
+): unknown {
+  if (!attachments || attachments.length === 0) return user;
+
+  const supports = PROVIDER_CATALOG[providerId].supports;
+  const blocks: unknown[] = [];
+  for (const a of attachments) {
+    if (a.kind === 'image') {
+      if (!supports.image) throw new UnsupportedAttachmentError(providerId, 'image');
+      blocks.push({
+        type: 'image_url',
+        image_url: { url: `data:${a.mimeType};base64,${a.dataBase64}` },
+      });
+    } else if (a.kind === 'pdf') {
+      // Chat Completions 경로로는 PDF 업로드 불가. 지원하지 않음.
+      throw new UnsupportedAttachmentError(providerId, 'pdf');
+    } else {
+      throw new UnsupportedAttachmentError(providerId, (a as Attachment).kind);
+    }
+  }
+  blocks.push({ type: 'text', text: user });
+  return blocks;
+}
+
 export function createOpenAICompatProvider(cfg: OpenAICompatConfig): LLMProvider {
   const { id, baseURL, getKey } = cfg;
 
@@ -89,13 +119,14 @@ export function createOpenAICompatProvider(cfg: OpenAICompatConfig): LLMProvider
 
     async callStructured(opts: StructuredCallOpts): Promise<unknown> {
       const schema = normalizeSchema(opts.tool.input_schema);
+      const userContent = buildUserContent(id, opts.user, opts.attachments);
       const res = await chatCompletions({
         model: modelFor(opts.role),
         max_tokens: opts.maxTokens,
         temperature: opts.temperature,
         messages: [
           { role: 'system', content: opts.system },
-          { role: 'user', content: opts.user },
+          { role: 'user', content: userContent },
         ],
         response_format: {
           type: 'json_schema',
@@ -123,13 +154,14 @@ export function createOpenAICompatProvider(cfg: OpenAICompatConfig): LLMProvider
     },
 
     async callSimple(opts: SimpleCallOpts): Promise<string> {
+      const userContent = buildUserContent(id, opts.user, opts.attachments);
       const res = await chatCompletions({
         model: modelFor(opts.role),
         max_tokens: opts.maxTokens,
         temperature: opts.temperature,
         messages: [
           { role: 'system', content: opts.system },
-          { role: 'user', content: opts.user },
+          { role: 'user', content: userContent },
         ],
       }, opts.signal ?? AbortSignal.timeout(15_000));
       if (!res.ok) throw new Error(`${id} API 오류: ${res.status}`);

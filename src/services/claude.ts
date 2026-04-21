@@ -12,12 +12,13 @@ import {
 } from './prompts';
 import type { ExtractionConfig } from '../types/extraction';
 import { allocateBudget, allocateLevelBudget, computeBranchingFactor } from '../types/extraction';
-import type { ToolDef } from './llm/types';
+import type { ToolDef, Attachment } from './llm/types';
 import {
   getProvider,
   getProviderKey,
   setProviderKey,
   getActiveProviderId,
+  assertAttachmentsSupported,
 } from './llm/registry';
 
 // ── 활성 프로바이더 추상화 ──
@@ -217,6 +218,7 @@ async function callPass(
   tool: ToolDef,
   signal: AbortSignal,
   temperature = 0.2,
+  attachments?: readonly Attachment[],
 ): Promise<unknown> {
   return getProvider().callStructured({
     role: 'fast',
@@ -226,6 +228,7 @@ async function callPass(
     temperature,
     maxTokens: 8192,
     signal,
+    attachments: attachments ? [...attachments] : undefined,
   });
 }
 
@@ -236,11 +239,12 @@ async function callPassWithRetry(
   signal: AbortSignal,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   validate: (raw: unknown) => any,
+  attachments?: readonly Attachment[],
 ) {
   const temps = [0.2, 0.4, 0.6];
   for (let i = 0; i < temps.length; i++) {
     try {
-      const raw = await callPass(prompt, systemPrompt, tool, signal, temps[i]);
+      const raw = await callPass(prompt, systemPrompt, tool, signal, temps[i], attachments);
       return validate(raw);
     } catch (error) {
       console.warn(`Pass ${tool.name} 시도 ${i + 1}/${temps.length} 실패:`, error);
@@ -381,7 +385,9 @@ export async function scaffoldNodes(
   prompt: string,
   config: ExtractionConfig,
   signal: AbortSignal,
+  attachments?: readonly Attachment[],
 ): Promise<ScaffoldNode[]> {
+  assertAttachmentsSupported(getActiveProviderId(), attachments);
   const lang = detectLanguage(prompt);
   const levelBudget = allocateLevelBudget(config.maxNodes, config.maxDepth);
   const sysPrompt = getScaffoldPrompt(lang, config.maxNodes, config.maxDepth, levelBudget);
@@ -391,7 +397,7 @@ export async function scaffoldNodes(
       const parsed = ScaffoldResultSchema.parse(data);
       if (parsed.nodes.length === 0) throw new Error('스캐폴드 노드가 비어 있습니다');
       return parsed;
-    });
+    }, attachments);
 
   const nodeIds = new Set(raw.nodes.map((n: ScaffoldNode) => n.id));
   let nodes = raw.nodes.map((n: ScaffoldNode) =>
@@ -419,7 +425,9 @@ export async function fillNodes(
   prompt: string,
   skeleton: ScaffoldNode[],
   signal: AbortSignal,
+  attachments?: readonly Attachment[],
 ): Promise<FillNode[]> {
+  assertAttachmentsSupported(getActiveProviderId(), attachments);
   const lang = detectLanguage(prompt);
   const skeletonIds = new Set(skeleton.map((s) => s.id));
 
@@ -439,7 +447,7 @@ export async function fillNodes(
 
       try {
         const raw = await callPassWithRetry(prompt, sysPrompt, FILL_TOOL, signal,
-          (data) => FillResultSchema.parse(data));
+          (data) => FillResultSchema.parse(data), attachments);
 
         for (const n of raw.nodes) {
           if (skeletonIds.has(n.id) && !filledIds.has(n.id)) {
@@ -494,12 +502,14 @@ export async function validateGraph(
   prompt: string,
   fullNodes: readonly { id: string; label: string; type: string; weight: number; parentId: string | null; abstractionLevel: string }[],
   signal: AbortSignal,
+  attachments?: readonly Attachment[],
 ): Promise<{ patches: PatchNode[]; edges: { sourceId: string; targetId: string; relation: string; strength: number }[] }> {
+  assertAttachmentsSupported(getActiveProviderId(), attachments);
   const lang = detectLanguage(prompt);
   const sysPrompt = getValidatePrompt(lang, fullNodes);
 
   const raw = await callPassWithRetry(prompt, sysPrompt, VALIDATE_TOOL, signal,
-    (data) => ValidateResultSchema.parse(data));
+    (data) => ValidateResultSchema.parse(data), attachments);
 
   const nodeIds = new Set(fullNodes.map((n) => n.id));
   return {
