@@ -4,3 +4,5 @@ export type { EdgeRelation, EdgeData } from './edge';
 export { EDGE_COLORS } from './edge';
 export type { ExtractionConfig } from './extraction';
 export { computeBranchingFactor, allocateBudget, allocateLevelBudget } from './extraction';
+export type { SegmentKind, SegmentProvenance, SynthesisSegment } from './synthesis';
+export { flattenSegments } from './synthesis';
