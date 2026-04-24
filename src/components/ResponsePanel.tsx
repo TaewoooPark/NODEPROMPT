@@ -144,6 +144,7 @@ export function ResponsePanel() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSynthesized, setShowSynthesized] = useState(false);
   const [clickedSentenceIdx, setClickedSentenceIdx] = useState<number | null>(null);
+  const [clickedSegmentIdx, setClickedSegmentIdx] = useState<number | null>(null);
   const lastUpdateRef = useRef(0);
   const t = useT();
 
@@ -177,8 +178,14 @@ export function ResponsePanel() {
   // 뷰 전환 시 provenance 정리 — 서로 다른 채널이 상태를 흘리지 않게
   useEffect(() => {
     setClickedSentenceIdx(null);
+    setClickedSegmentIdx(null);
     setHoveredProvenance(null);
   }, [showSynthesized, setHoveredProvenance]);
+
+  // 그래프가 재추출/변경되면 세그먼트 인덱스가 무효화됨
+  useEffect(() => {
+    setClickedSegmentIdx(null);
+  }, [segments]);
 
   const handleGenerate = useCallback(async () => {
     if (isGenerating || !originalPrompt || nodeArray.length === 0) return;
@@ -215,23 +222,32 @@ export function ResponsePanel() {
     setIsGenerating(false);
   }, []);
 
-  const handleSegmentEnter = useCallback(
-    (seg: SynthesisSegment) => {
+  const handleSegmentClick = useCallback(
+    (idx: number, seg: SynthesisSegment) => {
       if (isGenerating) return;
       if (!INTERACTIVE_KINDS.has(seg.kind)) return;
       if (seg.provenance.nodeIds.length === 0 && seg.provenance.edgeIds.length === 0) return;
+      if (clickedSegmentIdx === idx) {
+        setClickedSegmentIdx(null);
+        setHoveredProvenance(null);
+        return;
+      }
+      setClickedSegmentIdx(idx);
       setHoveredProvenance({
         nodeIds: seg.provenance.nodeIds,
         edgeIds: seg.provenance.edgeIds,
         kind: 'text',
       });
     },
-    [isGenerating, setHoveredProvenance],
+    [clickedSegmentIdx, isGenerating, setHoveredProvenance],
   );
 
-  const handleSegmentLeave = useCallback(() => {
-    setHoveredProvenance(null);
-  }, [setHoveredProvenance]);
+  const handleSynthBgClick = useCallback(() => {
+    if (clickedSegmentIdx !== null) {
+      setClickedSegmentIdx(null);
+      setHoveredProvenance(null);
+    }
+  }, [clickedSegmentIdx, setHoveredProvenance]);
 
   const handleSentenceClick = useCallback(
     (idx: number, text: string) => {
@@ -278,19 +294,34 @@ export function ResponsePanel() {
           <div style={{ fontSize: 10, color: '#888', fontWeight: 300, letterSpacing: '0.02em', margin: '0 2px' }}>
             {t('resp.diffHint')}
           </div>
-          <div style={synthesizedBoxStyle} onMouseLeave={handleSegmentLeave}>
+          <div style={synthesizedBoxStyle} onClick={handleSynthBgClick}>
             {segments.map((seg, i) => {
               const interactive = INTERACTIVE_KINDS.has(seg.kind);
-              const style = segmentStyle(seg);
+              const baseStyle = segmentStyle(seg);
               if (!interactive) {
                 return (
-                  <span key={i} style={style}>
+                  <span key={i} style={baseStyle}>
                     {seg.text}
                   </span>
                 );
               }
+              const isActive = clickedSegmentIdx === i;
               return (
-                <span key={i} style={style} onMouseEnter={() => handleSegmentEnter(seg)}>
+                <span
+                  key={i}
+                  style={{
+                    ...baseStyle,
+                    background: isActive ? 'rgba(0,0,0,0.08)' : 'transparent',
+                    borderRadius: 3,
+                    padding: '1px 2px',
+                    margin: '0 -2px',
+                    transition: 'background 0.25s ease',
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSegmentClick(i, seg);
+                  }}
+                >
                   {seg.text}
                 </span>
               );
