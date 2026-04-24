@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import type { NodeData, EdgeData, Vec3 } from '../types';
+import type { NodeData, EdgeData, Vec3, SynthesisSegment } from '../types';
+
+export interface HoveredProvenance {
+  nodeIds: string[];
+  edgeIds: string[];
+  kind: 'text' | 'scene';
+}
 
 export type ViewMode = 'sphere' | 'radial' | 'interior';
 
@@ -49,6 +55,10 @@ interface GraphState {
   setOriginalPrompt: (p: string) => void;
   synthesizedPrompt: string;
   setSynthesizedPrompt: (p: string) => void;
+  synthesisSegments: SynthesisSegment[];
+  setSynthesisSegments: (segs: SynthesisSegment[]) => void;
+  hoveredProvenance: HoveredProvenance | null;
+  setHoveredProvenance: (p: HoveredProvenance | null) => void;
   response: string;
   setResponse: (r: string) => void;
   isProcessing: boolean;
@@ -169,6 +179,10 @@ export const useGraphStore = create<GraphState>((set, get) => ({
   setOriginalPrompt: (p) => set({ originalPrompt: p }),
   synthesizedPrompt: '',
   setSynthesizedPrompt: (p) => set({ synthesizedPrompt: p }),
+  synthesisSegments: [],
+  setSynthesisSegments: (segs) => set({ synthesisSegments: segs }),
+  hoveredProvenance: null,
+  setHoveredProvenance: (p) => set({ hoveredProvenance: p }),
   response: '',
   setResponse: (r) => set({ response: r }),
   isProcessing: false,

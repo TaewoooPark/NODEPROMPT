@@ -126,6 +126,10 @@ const translations = {
   'resp.generate': { ko: '답변 생성', en: 'Generate' },
   'resp.generating': { ko: '답변 생성 중...', en: 'Generating...' },
   'resp.error': { ko: '오류', en: 'Error' },
+  'resp.diffHint': {
+    ko: '프롬프트 조각에 마우스를 올리면 해당 노드가 씬에서 강조됩니다.',
+    en: 'Hover a prompt fragment to highlight the corresponding nodes in the scene.',
+  },
 
   // ── HandGestureOverlay ──
   'gesture.disable': { ko: '제스처 제어 끄기', en: 'Disable gesture control' },
