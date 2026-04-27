@@ -25,7 +25,7 @@ NodePrompt decomposes prompts — text, images, or PDFs — into multi-dimension
 
 > *"Thinking is non-linear. Language is linear. The sphere bridges that gap."*
 
-[한국어 README](./README_KR.md)
+[한국어 README](./README_KR.md) &nbsp;·&nbsp; [**taewoopark.com** — author site](https://taewoopark.com)
 
 <p align="center">
   <video src="https://github.com/user-attachments/assets/388508da-4304-456e-a41e-19b30b890bff" width="100%" autoplay loop muted playsinline></video>
@@ -491,6 +491,7 @@ Add subordinate details (depth 3+) and cross-branch edges. Budget: remaining ~38
   <a href="https://x.com/theoverstrcture"><img src="https://img.shields.io/badge/-X-000000?style=for-the-badge&logo=x&logoColor=white" alt="X (Twitter)"></a>
   <a href="https://www.linkedin.com/in/taewoo-park-427a05352"><img src="https://img.shields.io/badge/-LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
   <a href="https://www.instagram.com/t.wo0_x/"><img src="https://img.shields.io/badge/-Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram"></a>
+  <a href="https://taewoopark.com"><img src="https://img.shields.io/badge/-taewoopark.com-000000?style=for-the-badge&logo=safari&logoColor=white" alt="Personal site"></a>
   <a href="mailto:ptw151125@kaist.ac.kr"><img src="https://img.shields.io/badge/-Email-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"></a>
 </p>
 
